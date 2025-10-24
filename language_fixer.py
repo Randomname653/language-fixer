@@ -905,5 +905,5 @@ def main_loop():
         logging.info(f"🕒 Nächster Scan geplant in {RUN_INTERVAL_SECONDS/3600:.1f} Stunden.")
         time.sleep(RUN_INTERVAL_SECONDS)
 
-    if __name__=="__main__":
-        main_loop()
+if __name__=="__main__":
+    main_loop()
