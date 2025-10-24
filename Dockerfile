@@ -20,6 +20,4 @@ WORKDIR /app
 
 COPY --chown=568:568 language_fixer.py .
 
-RUN chown appuser:appuser language_fixer.py
-
 CMD ["python3", "/app/language_fixer.py"]
