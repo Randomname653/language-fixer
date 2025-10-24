@@ -481,18 +481,18 @@ def process_file(cursor, file_path, file_type, stats):
             streams_to_remove.append(idx)
     # --- Ende Erste Schleife ---
 
-    # --- Zweite Schleife: Aktionen planen ---
+# --- Zweite Schleife: Aktionen planen ---
     audio_tracks_kept = []
     subtitle_tracks_kept = []
     has_audio_default_candidate = False
     has_subtitle_default_candidate = False
 
-    # First pass to build lists and check for default candidates
+    # First pass to build lists and check for default candidates (uses correct 'final_lang' key)
     for item in streams_to_keep:
-        s = item['stream']; idx = s['index']; ct = s.get('codec_type'); fl = item['final_lang'] # Correct key
+        s = item['stream']; idx = s['index']; ct = s.get('codec_type'); fl = item['final_lang']
         is_comm = is_commentary(s)
 
-        # *** Fix Inconsistency: Use 'final_lang' key here as well ***
+        # track_info speichert den originalen Status
         track_info = {'original_index': idx, 'final_lang': fl, 'is_commentary': is_comm, 'stream': s}
 
         if ct == 'audio':
@@ -506,60 +506,67 @@ def process_file(cursor, file_path, file_type, stats):
 
     final_audio_default_original_idx = -1
     final_subtitle_default_original_idx = -1
+    
+    # ----------------------------------------------------------------------
+    # Bestimme, welcher Index tatsächlich das DEFAULT-Ziel ist (SOLL-Zustand)
+    # ----------------------------------------------------------------------
 
-    # Determine actual default track index
+    # Determine actual default track index (audio)
     if has_audio_default_candidate:
         for track in audio_tracks_kept:
-            if track['final_lang'] == DEFAULT_AUDIO_LANG and not track['is_commentary']: # Correct key
+            if track['final_lang'] == DEFAULT_AUDIO_LANG and not track['is_commentary']:
                 final_audio_default_original_idx = track['original_index']
-                stats.default_audio_set += 1
+                stats.default_audio_set += 1 
                 break
-        if final_audio_default_original_idx == -1: has_audio_default_candidate = False
+        # Wenn kein geeigneter Kandidat gefunden wurde, bleibt der Default-Status bei -1
 
+    # Determine actual default track index (subtitle)
     if has_subtitle_default_candidate:
         for track in subtitle_tracks_kept:
-            if track['final_lang'] == DEFAULT_SUBTITLE_LANG: # Correct key
-                final_subtitle_default_original_idx = track['original_index']
-                stats.default_sub_set += 1
-                break
-        if final_subtitle_default_original_idx == -1: has_subtitle_default_candidate = False
+             if track['final_lang'] == DEFAULT_SUBTITLE_LANG:
+                 final_subtitle_default_original_idx = track['original_index']
+                 stats.default_sub_set += 1 
+                 break
+        # Wenn kein geeigneter Kandidat gefunden wurde, bleibt der Default-Status bei -1
 
-    # --- Generate mkvpropedit and ffmpeg plans ---
+    # Reset mkvpropedit actions before rebuilding (optional, aber sicher)
+    plan['actions_mkvprop'] = [] 
+    
+    # ----------------------------------------------------------------------
+    # Hauptschleife zur Generierung der Aktionen (Ist vs. Soll)
+    # ----------------------------------------------------------------------
     new_audio_idx = 0
     new_subtitle_idx = 0
     
-    # Reset mkvpropedit actions before rebuilding
-    plan['actions_mkvprop'] = [] 
-    
-    # Add actions to clear existing default flags first (safer approach)
-    for track in audio_tracks_kept:
-        mid = track['original_index'] + 1
-        plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', 'flag-default=0'])
-    for track in subtitle_tracks_kept:
-        mid = track['original_index'] + 1
-        plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', 'flag-default=0'])
-
     for item in streams_to_keep:
-        # *** Fix: Correctly get index and language ***
         s = item['stream']
-        idx = s['index'] # Use index from the stream dict
+        idx = s['index'] # 0-basierter Index (Original)
         ct = s.get('codec_type')
-        fl = item['final_lang'] # Use the correct key
+        fl = item['final_lang']
         ol = normalize_lang_code(s.get('tags', {}).get('language', 'und'))
-        mid = idx + 1 # Correct calculation based on original index
+        mid = idx + 1 # 1-basierter Index für mkvpropedit
 
         is_audio = ct == 'audio'
         is_subtitle = ct == 'subtitle'
-        is_default = (is_audio and idx == final_audio_default_original_idx) or \
-                    (is_subtitle and idx == final_subtitle_default_original_idx)
+        
+        # 1. SOLL-ZUSTAND: Bestimme, ob das Flag gesetzt werden soll
+        is_default_target = (is_audio and idx == final_audio_default_original_idx) or \
+                            (is_subtitle and idx == final_subtitle_default_original_idx)
 
-        # Plan Language Tag Change
+        # 2. IST-ZUSTAND: Prüfe den aktuellen Wert des Default-Flags im Stream
+        is_default_already_set = s.get('disposition', {}).get('default', 0) == 1
+
+        # ----------------------------------------------------
+        # 3. PLANUNG (Ist != Soll)
+        # ----------------------------------------------------
+
+        # Plan Language Tag Change (falls der Tag in der Datei falsch ist)
         if fl != ol:
             plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', f'language={fl}'])
             plan['dry_run_log'].append(f"🏷️ Würde Spur {idx} ({ct}) auf '{fl}' taggen.")
             if file_path.lower().endswith('.mp4'): plan['needs_remux'] = True
 
-        # Plan Audio Title Change
+        # Plan Audio Title Change (wenn nötig, triggert Remux)
         nt = None
         if is_audio:
             nt = format_audio_title(s, fl)
@@ -569,24 +576,36 @@ def process_file(cursor, file_path, file_type, stats):
                 plan['dry_run_log'].append(f"✏️ Würde Spur {idx} (Audio) umbenennen zu: '{nt}'.")
                 stats.audio_renamed += 1
 
-        # Plan Default Flag Change (set the specific one to 1)
-        if is_default:
-            plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', f'flag-default=1']) # Set the chosen one
-            plan['dry_run_log'].append(f"⭐ Würde Spur {idx} ({ct}, {fl}) als DEFAULT setzen.")
+        # Plan Default Flag Change (NUR wenn sich der Zustand ändert!)
+        # Fall 1: Ist nicht Standard (0), soll aber Standard werden (1)
+        if is_default_target and not is_default_already_set:
+            plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', f'flag-default=1'])
+            plan['dry_run_log'].append(f"⭐ Würde Spur {idx} ({ct}, {fl}) als DEFAULT setzen (neu nötig).")
+            # ACHTUNG: Die stats.default_audio_set Zählung findet bereits oben statt!
+
+        # Fall 2: Ist Standard (1), soll aber KEIN Standard sein (0)
+        elif not is_default_target and is_default_already_set:
+            plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', f'flag-default=0'])
+            plan['dry_run_log'].append(f"❌ Würde DEFAULT-Flag von Spur {idx} ({ct}, {fl}) entfernen (nicht mehr nötig).")
+
 
         # Plan FFmpeg mappings and metadata
         if is_audio or is_subtitle:
-            plan['maps_ffmpeg'].extend(['-map', f'0:{idx}'])
-            stream_type_char = 'a' if is_audio else 's'
-            new_idx = new_audio_idx if is_audio else new_subtitle_idx
-            prefix = f's:{stream_type_char}:{new_idx}'
-            dispos = '+default' if is_default else '-default'
-            plan['metadata_ffmpeg'].extend([f'-metadata:{prefix}', f'language={fl}'])
-            plan['metadata_ffmpeg'].extend([f'-disposition:{prefix}', dispos]) # Base disposition
-            if is_audio and RENAME_AUDIO_TRACKS and nt:
-                plan['metadata_ffmpeg'].extend([f'-metadata:{prefix}', f'title={nt}'])
-            if is_audio: new_audio_idx += 1
-            else: new_subtitle_idx += 1
+             plan['maps_ffmpeg'].extend(['-map', f'0:{idx}'])
+             stream_type_char = 'a' if is_audio else 's'
+             new_idx = new_audio_idx if is_audio else new_subtitle_idx
+             prefix = f's:{stream_type_char}:{new_idx}'
+             
+             # Disposition für FFmpeg basiert auf dem SOLL-Zustand (is_default_target)
+             dispos = '+default' if is_default_target else '-default'
+             
+             plan['metadata_ffmpeg'].extend([f'-metadata:{prefix}', f'language={fl}'])
+             plan['metadata_ffmpeg'].extend([f'-disposition:{prefix}', dispos]) 
+             if is_audio and RENAME_AUDIO_TRACKS and nt:
+                 plan['metadata_ffmpeg'].extend([f'-metadata:{prefix}', f'title={nt}'])
+
+             if is_audio: new_audio_idx += 1
+             else: new_subtitle_idx += 1
 
     # Correct ffmpeg dispositions are now implicitly handled by setting only one '+default' above
 
