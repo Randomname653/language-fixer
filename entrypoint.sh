@@ -22,4 +22,4 @@ chown -R "$PUID":"$PGID" /config
 
 echo "Starting application as user $PUID group $PGID..."
 # Execute the main command as the specified user/group
-exec sudo -u#"$PUID" -g#"$PGID" python3 /app/language_fixer.py "$@"
+exec sudo -E -u "#$PUID" -g "#$PGID" python3 /app/language_fixer.py "$@"
