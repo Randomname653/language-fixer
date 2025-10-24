@@ -18,7 +18,7 @@ RUN pip3 install --no-cache-dir requests
 
 WORKDIR /app
 
-COPY language_fixer.py .
+COPY --chown=568:568 language_fixer.py .
 
 RUN chown appuser:appuser language_fixer.py
 
