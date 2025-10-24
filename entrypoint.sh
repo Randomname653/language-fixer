@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "--- Environment variables as root user ---"
-printenv | sort
-echo "----------------------------------------"
-
 # Default IDs if not provided
 PUID=${PUID:-568}
 PGID=${PGID:-568}
@@ -25,5 +21,5 @@ chown -R "$PUID":"$PGID" /config
 # chown -R "$PUID":"$PGID" /app
 
 echo "Starting application as user $PUID group $PGID..."
-# Execute the main command as the specified user/group, with environment logging
-exec sudo -E -u "#$PUID" -g "#$PGID" /bin/bash -c 'echo "--- Environment variables as appuser ---"; printenv | sort; echo "--- End of appuser environment variables ---"; exec python3 /app/language_fixer.py "$@"' bash "$@"
+# Execute the main command as the specified user/group
+exec sudo -E -u "$APP_USER" python3 /app/language_fixer.py "$@"
