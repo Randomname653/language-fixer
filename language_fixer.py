@@ -402,7 +402,7 @@ def process_file(cursor, file_path, file_type, stats):
         keep = True
 
         run_whisper = (ct == 'audio' and final_lt == 'und' and not is_comm and
-                    WHISPER_API_URL and ('und' not in KEEP_AUDIO_LANGS))
+                   WHISPER_API_URL) # Führe Whisper aus, wenn es und ist und die API da ist
         if run_whisper:
             if dur >= 180:
                 logging.info(f"  🔍 Analysiere Spur #{idx} (Audio, und)..."); langs=[]
