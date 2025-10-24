@@ -19,5 +19,7 @@ RUN pip3 install --no-cache-dir requests
 WORKDIR /app
 
 COPY --chown=568:568 language_fixer.py .
+COPY entrypoint.sh .
+RUN chmod +x /app/entrypoint.sh
 
-CMD ["python3", "/app/language_fixer.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]
