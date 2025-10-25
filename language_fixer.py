@@ -57,6 +57,7 @@ REMOVE_AUDIO = parse_bool("REMOVE_AUDIO", True)
 REMOVE_SUBTITLES = parse_bool("REMOVE_SUBTITLES", True)
 REMOVE_ATTACHMENTS = parse_bool("REMOVE_ATTACHMENTS", True)
 RENAME_AUDIO_TRACKS = parse_bool("RENAME_AUDIO_TRACKS", True)
+REMOVE_FONTS = parse_bool("REMOVE_FONTS", False)
 KEEP_COMMENTARY = parse_bool("KEEP_COMMENTARY", True)
 LOG_STATS_ON_COMPLETION = parse_bool("LOG_STATS_ON_COMPLETION", True)
 
@@ -462,7 +463,22 @@ def process_file(cursor, file_path, file_type, stats):
             remove_condition = REMOVE_SUBTITLES and final_lt not in KEEP_SUBTITLE_LANGS
             keep_list_for_log = KEEP_SUBTITLE_LANGS
         elif ct == 'attachment':
-            remove_condition = REMOVE_ATTACHMENTS
+            # MIME Type des Anhangs prüfen (ffprobe liefert dies oft in tags)
+            mimetype = stream.get('tags', {}).get('mimetype', '').lower()
+            
+            # Neue Logik: Prüfe, ob es eine Schriftart ist
+            is_font = mimetype.startswith('font/') or mimetype.endswith('/truetype') or mimetype.endswith('/opentype')
+            
+            if is_font:
+                # WENN es eine Schriftart ist: Prüfe die neue Variable REMOVE_FONTS
+                remove_condition = REMOVE_FONTS
+                stream_type_label = 'Font'
+                keep_list_for_log = set() 
+            else:
+                # WENN es ein anderes Attachment ist (z.B. Cover, Bild): Prüfe REMOVE_ATTACHMENTS
+                remove_condition = REMOVE_ATTACHMENTS
+                stream_type_label = 'Attachment'
+                keep_list_for_log = set()
         elif ct != 'video': # Keep video by default, also keep unknown types
             logging.debug(f"Unbekannter Stream-Typ '{ct}' bei Index {idx} wird beibehalten.")
 
@@ -475,10 +491,17 @@ def process_file(cursor, file_path, file_type, stats):
             elif ct == 'subtitle': stats.subs_removed += 1; plan['dry_run_log'].append(f"⛔ Würde Spur {idx} (Sub, {final_lt}) ENTFERNEN.")
             elif ct == 'attachment': stats.attachments_removed += 1; plan['dry_run_log'].append(f"⛔ Würde Spur {idx} (Attachment) ENTFERNEN.")
 
-        if keep:
-            streams_to_keep.append({'stream': stream, 'final_lang': final_lt}) # Use 'final_lang'
+        if keep: streams_to_keep.append({'stream':stream,'final_lang':final_lt})
         else:
-            streams_to_remove.append(idx)
+             streams_to_remove.append(idx); plan['needs_remux']=True
+            
+             if ct == 'attachment':
+                 if 'Font' in stream_type_label: # Wenn es eine Schriftart war
+                      stats.attachments_removed += 1 # Zähle es unter Attachments
+                      plan['dry_run_log'].append(f"⛔ Würde Spur {idx} (Font) ENTFERNEN.")
+                 else: # Wenn es ein anderes Attachment war
+                      stats.attachments_removed += 1
+                      plan['dry_run_log'].append(f"⛔ Würde Spur {idx} (Attachment) ENTFERNEN.")
     # --- Ende Erste Schleife ---
 
 # --- Zweite Schleife: Aktionen planen ---
