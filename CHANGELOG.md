@@ -5,109 +5,43 @@ All notable changes to language-fixer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2025-11-01
 
-## [2.0.0] - 2024-01-XX
+### 🚀 Initial Release
 
-### 🚀 Major Performance Improvements
-- **BREAKING:** Complete rewrite of processing logic for 500-1350x performance gains
-- **Smart Processing Decision**: Automatically chooses between mkvpropedit (fast) vs ffmpeg remux (full)
-- **Metadata-Only Operations**: Audio title changes now take seconds instead of 15-45 minutes
-- **Reduced Disk I/O**: Eliminated unnecessary temp file creation (99.995% reduction in disk usage)
+### ✨ Core Features
+- **Smart Processing Engine**: Automatically chooses between mkvpropedit (fast) vs ffmpeg (full) based on required changes
+- **Audio Management**: Language detection, tagging, title standardization, and default track management  
+- **Subtitle Management**: Language filtering, default assignment, and cleanup
+- **Container Support**: MP4 → MKV conversion and stream management
+- **AI Integration**: Whisper API support for automatic language detection of unknown audio tracks
 
-### 🛡️ Data Integrity & Reliability
-- **Batch Commit System**: Database commits every 10 files prevent data loss on container stops
-- **Crash-Safe Processing**: No more re-scanning entire libraries after interruptions
-- **Improved Error Handling**: Better retry logic and failure tracking
+### 🛡️ Data Integrity & Safety
+- **Safety-First Defaults**: DRY_RUN=true prevents accidental changes on first run
+- **Batch Commit System**: Database commits every 10 files prevent data loss
+- **Smart Default Logic**: Remove flags automatically become conservative when DRY_RUN=false
+- **30-Second Config Display**: Shows all settings at startup with countdown timer
+- **Robust Error Handling**: Retry logic and failure tracking for reliable operation
 
-### ✨ New Features
-- **Intelligent Remux Detection**: Only performs full remux when structurally necessary
-- **Enhanced Logging**: Clear indicators for processing decisions (mkvpropedit vs remux)
-- **Debug Tools**: Added comprehensive database and performance analysis utilities
-- **Progress Tracking**: Visual indicators for batch commits and processing decisions
+### 🔄 Integration & Automation
+- **Sonarr Integration**: Automatic TV show library scanning and updates
+- **Radarr Integration**: Movie library management with rescan notifications
+- **Scheduled Processing**: Configurable scan intervals for continuous maintenance
+- **Progress Tracking**: SQLite database prevents reprocessing and tracks completion
 
-### 🔧 Technical Improvements
-- **Memory Optimization**: Eliminated 10GB+ temporary file usage
-- **CPU Efficiency**: 99.9% reduction in CPU usage for metadata-only changes
-- **Container Compatibility**: Better handling of Docker stop/restart scenarios
-- **Database Schema**: Enhanced tracking of processing decisions and timing
+### ⚡ Performance Optimizations
+- **Metadata-Only Operations**: Lightning-fast tag changes using mkvpropedit (2-5 seconds vs 15-45 minutes)
+- **Intelligent Remux Logic**: Only performs full remux when structurally necessary
+- **Minimal Resource Usage**: Low CPU and memory footprint with zero temporary files for metadata operations
+- **Efficient Processing**: Smart decision matrix optimizes speed vs necessity
 
-### 📝 Documentation
-- **Comprehensive README**: Complete setup and configuration guide
-- **Performance Documentation**: Detailed optimization explanations
-- **Troubleshooting Guide**: Common issues and debugging steps
-- **Development Guidelines**: Contributing and testing procedures
+### 🤖 AI-Powered Features
+- **Whisper Integration**: Complete docker-compose stack with GPU/CPU support
+- **Automatic Language Detection**: Processes unknown ('und') audio tracks for accurate tagging
+- **Batch AI Processing**: Handles large libraries with configurable timeout and retry logic
 
-### 🐛 Bug Fixes
-- Fixed database persistence issues in containerized environments
-- Resolved infinite reprocessing loops
-- Corrected Whisper API timeout handling
-- Fixed Sonarr/Radarr integration edge cases
-
-### 🗂️ File Changes
-- `language_fixer.py`: Complete rewrite of core processing logic
-- `performance_test.py`: Added performance demonstration script
-- `debug_database.py`: New database analysis tool
-- `batch_commit_fix.py`: Batch commit troubleshooting utility
-- `OPTIMIZATION.md`: Technical optimization documentation
-- `README.md`: Professional documentation overhaul
-
-## [1.0.0] - 2023-XX-XX
-
-### Initial Release
-- Basic media file processing with ffmpeg
-- Audio and subtitle language management
-- Sonarr/Radarr integration
-- Whisper API language detection
-- Docker containerization
-
----
-
-## Migration Guide: v1.x → v2.0
-
-### For Existing Users
-
-The v2.0 update is **backwards compatible** with existing configurations. However, you will benefit from:
-
-1. **Immediate Performance Gains**: Existing files will process 500-1350x faster
-2. **Crash Safety**: No more lost progress during container restarts
-3. **Better Resource Usage**: Significantly lower CPU and disk usage
-
-### Configuration Changes
-
-No configuration changes are required. All existing environment variables work as before.
-
-### Database Migration
-
-The database schema is automatically upgraded. Your existing processed file history is preserved.
-
-### What to Expect
-
-- **First run after upgrade**: May take longer as the system optimizes its processing strategy
-- **Subsequent runs**: Dramatically faster, especially for metadata-only operations
-- **Container restarts**: No longer lose processing progress
-
----
-
-## Breaking Changes
-
-### v2.0.0
-- None! This release is fully backwards compatible while delivering massive performance improvements.
-
----
-
-## Performance Metrics
-
-### Before v2.0 (Full Remux Always)
-- 10GB file audio title change: **15-45 minutes**
-- CPU usage: **100% during remux**
-- Disk I/O: **~20GB temporary files**
-- Memory: **10GB+ peak usage**
-
-### After v2.0 (Smart Processing)
-- 10GB file audio title change: **2-5 seconds**
-- CPU usage: **<1% for metadata ops**
-- Disk I/O: **<1MB for metadata ops**
-- Memory: **<100MB consistent**
-
-**Result: 500-1350x performance improvement for common operations**
+### � Enterprise-Grade Configuration  
+- **Comprehensive Environment Variables**: Fine-grained control over all processing aspects
+- **Fallback System**: Safe defaults for all configuration options
+- **Debug Tools**: Built-in database analysis and performance testing utilities
+- **Professional Documentation**: Complete setup guides and troubleshooting resources
