@@ -384,7 +384,7 @@ def process_file(cursor, file_path, file_type, stats):
         dur = 0
 
     plan = {
-        'needs_remux': file_path.lower().endswith('.mp4'),
+        'needs_remux': file_path.lower().endswith('.mp4'),  # MP4s müssen zu MKV konvertiert werden
         'actions_mkvprop': [],
         'maps_ffmpeg': ['-map', '0:v?'],
         'metadata_ffmpeg': [],
@@ -589,14 +589,20 @@ def process_file(cursor, file_path, file_type, stats):
             plan['dry_run_log'].append(f"🏷️ Würde Spur {idx} ({ct}) auf '{fl}' taggen.")
             if file_path.lower().endswith('.mp4'): plan['needs_remux'] = True
 
-        # Plan Audio Title Change (wenn nötig, triggert Remux)
+        # Plan Audio Title Change (intelligente Entscheidung: mkvpropedit vs Remux)
         nt = None
         if is_audio:
             nt = format_audio_title(s, fl)
             ot = s.get('tags', {}).get('title')
             if RENAME_AUDIO_TRACKS and nt and nt != ot:
-                plan['needs_remux'] = True
-                plan['dry_run_log'].append(f"✏️ Würde Spur {idx} (Audio) umbenennen zu: '{nt}'.")
+                # Nur Remux wenn STRUKTURELLE Änderungen nötig sind
+                if streams_to_remove or file_path.lower().endswith('.mp4'):
+                    plan['needs_remux'] = True
+                    plan['dry_run_log'].append(f"✏️ Würde Spur {idx} (Audio) umbenennen zu: '{nt}' [via Remux].")
+                else:
+                    # Effiziente Metadaten-Änderung mit mkvpropedit
+                    plan['actions_mkvprop'].extend(['--edit', f'track:{mid}', '--set', f'title={nt}'])
+                    plan['dry_run_log'].append(f"✏️ Würde Spur {idx} (Audio) umbenennen zu: '{nt}' [via mkvpropedit].")
                 stats.audio_renamed += 1
 
         # Plan Default Flag Change (NUR wenn sich der Zustand ändert!)
@@ -632,7 +638,9 @@ def process_file(cursor, file_path, file_type, stats):
 
     # Correct ffmpeg dispositions are now implicitly handled by setting only one '+default' above
 
-    # --- Entscheidung und Ausführung ---
+    # --- Entscheidung und Ausführung (Optimiert für Effizienz) ---
+    # Remux nur bei strukturellen Änderungen (Streams entfernen, MP4->MKV)
+    # Metadaten-Änderungen (Titel, Sprache, Flags) nutzen mkvpropedit
     mod = plan['needs_remux'] or any('--set' in a for a in plan['actions_mkvprop'])
 
     if not mod:
