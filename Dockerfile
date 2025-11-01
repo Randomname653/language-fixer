@@ -18,10 +18,12 @@ RUN apt-get update && \
 # Create virtual environment and install Python packages
 RUN python3 -m venv /opt/venv && \
     . /opt/venv/bin/activate && \
-    pip install --no-cache-dir requests
+    pip install --no-cache-dir requests && \
+    chmod -R 755 /opt/venv
 
 # Ensure virtual environment is activated in all subsequent commands
 ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
 
 WORKDIR /app
 
