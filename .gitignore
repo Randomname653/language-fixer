@@ -266,3 +266,9 @@ coverage_reports/
 # Performance test outputs
 performance_results.txt
 benchmark_*.json
+
+# Agent instructions and session files (local only)
+AGENT_INSTRUCTIONS.md
+.copilot-session.md
+.agent-*
+.session-*
