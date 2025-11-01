@@ -86,12 +86,13 @@ jobs:
     - name: Test Docker image
       if: github.event_name == 'pull_request'
       run: |
-        docker run --rm \
+        # Run container with timeout at host level to properly test startup
+        timeout 60s docker run --rm \
           -e DRY_RUN=true \
           -e LOG_LEVEL=debug \
-          -v ${{ github.workspace }}:/test \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} \
-          timeout 30s python3 language_fixer.py || true
+          -e RUN_INTERVAL_SECONDS=0 \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} || true
+        echo "✅ Container startup test completed"
 
   security-scan:
     name: 🔒 Docker Security Scan

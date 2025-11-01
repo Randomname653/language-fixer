@@ -40,5 +40,5 @@ echo "   ✅ /opt/venv ownership pre-configured (build-time)"
 echo "🚀 Starting application as user $PUID group $PGID..."
 echo "   Command: python3 /app/language_fixer.py"
 
-# Execute the main command as the specified user/group with full environment
-exec sudo -E -u "$APP_USER" env PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"
+# Execute the main command as the specified user/group with full environment using gosu
+exec gosu "$APP_USER" env PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"

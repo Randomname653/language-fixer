@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 # --- VERSION INFORMATION ---
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __app_name__ = "Language-Fixer"
 
 # --- EARLY DEFINITIONS ---
@@ -117,13 +117,18 @@ DEFAULT_AUDIO_LANG = parse_env_single("DEFAULT_AUDIO_LANG", "jpn")
 DEFAULT_SUBTITLE_LANG = parse_env_single("DEFAULT_SUBTITLE_LANG", "deu")
 
 COMMENTARY_KEYWORDS = ['commentary', 'kommentar', 'director', 'regisseur', 'creator', 'audio description']
-MODIFIED_SONARR_PATHS = set(); MODIFIED_RADARR_PATHS = set(); SCAN_PATHS = {}
 MODIFIED_SONARR_PATHS = set()
 MODIFIED_RADARR_PATHS = set()
 SCAN_PATHS = {}
 
 def print_configuration_summary():
-    """Zeigt alle verwendeten Konfigurationswerte für 30 Sekunden an."""
+    """
+    Displays all configuration values for 30 seconds at startup.
+    
+    This intentional delay gives users time to review settings and cancel
+    if needed before any file operations begin. Particularly important when
+    DRY_RUN=false to prevent accidental modifications.
+    """
     print("\n" + "="*80)
     print(f"🎬 {__app_name__.upper()} v{__version__}")
     print("="*80)
@@ -245,7 +250,7 @@ def validate_config():
     valid = True
     logging.info("⚙️ Prüfe Konfiguration...")
 
-    needs_whisper = WHISPER_API_URL and ('und' not in KEEP_AUDIO_LANGS) # Whisper only needed if URL set AND 'und' not explicitly kept
+    # Check if Whisper is needed but not configured
     if not WHISPER_API_URL and ('und' not in KEEP_AUDIO_LANGS):
         logging.error("❌ Konfigurationsfehler: 'und' Audiospuren sollen analysiert werden (nicht in KEEP_AUDIO_LANGS), aber WHISPER_API_URL ist nicht gesetzt!")
         valid = False

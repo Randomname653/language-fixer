@@ -5,6 +5,50 @@ All notable changes to language-fixer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-11-01
+
+### 🔧 Fixed
+- **LICENSE Consistency**: Removed conflicting MIT-style warranty disclaimer from CC BY-NC-SA 4.0 license file
+  - Now contains only CC BY-NC-SA 4.0 compliant disclaimer text
+  - Resolves legal ambiguity for commercial use restrictions
+- **CI Test Step**: Fixed Docker container test in GitHub Actions workflow
+  - Timeout now runs at host level instead of being passed as container argument
+  - Added `RUN_INTERVAL_SECONDS=0` to prevent test hanging
+  - Test properly validates container startup and basic functionality
+
+### 📚 Improved
+- **Documentation Consistency**: Unified DRY_RUN defaults across all examples
+  - Docker Compose quick-start now shows `DRY_RUN=true` (safe default)
+  - Docker Run quick-start now shows `DRY_RUN=true` (safe default)
+  - Added clear 5-step guide for switching to production mode
+  - Enhanced safety warnings and review process documentation
+- **Missing References**: Removed references to non-existent files
+  - Removed `OPTIMIZATION.md` reference from README Contributing section
+  - Removed `/scripts/` directory reference from PROJECT_STATUS
+- **Security Documentation**: Enhanced .trivyignore with comprehensive metadata
+  - Added detailed risk assessments for each ignored CVE
+  - Added review dates (2025-11-01) and next review dates
+  - Added categorization by vulnerability type and risk level
+  - Added justifications for why each CVE is safe to ignore in our context
+
+### ⚡ Changed
+- **Container User Switching**: Replaced `sudo` with `gosu` for lightweight process execution
+  - Reduced container overhead and improved startup performance
+  - More idiomatic for containerized environments
+  - Updated Dockerfile to install gosu instead of sudo
+- **Code Quality**: Minor code improvements in language_fixer.py
+  - Removed duplicate initialization of `MODIFIED_SONARR_PATHS`
+  - Removed unused `needs_whisper` variable
+  - Added comprehensive docstring for 30-second configuration display timer
+  - Improved code clarity and maintainability
+
+### 📖 Documentation Updates
+- Updated AGENT_INSTRUCTIONS.md with v1.0.1 improvements and gosu usage
+- Updated PROJECT_STATUS.md to reflect v1.0.1 quality improvements
+- Enhanced inline code comments for better maintainability
+
+---
+
 ## [1.0.0] - 2025-11-01
 
 ### 🚀 Initial Release

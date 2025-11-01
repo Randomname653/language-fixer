@@ -46,8 +46,16 @@ A powerful Docker-based automation tool for managing audio and subtitle language
 
 > **🔒 Safety First:** Language-Fixer defaults to **DRY_RUN=true** for safety! 
 > - First run shows you **exactly** what would be changed
-> - Set `DRY_RUN=false` only after reviewing the planned changes
+> - Review the logs to verify planned changes
+> - Set `DRY_RUN=false` only after confirming changes are correct
 > - Smart defaults automatically become conservative when DRY_RUN=false
+
+> **⚙️ Switching to Production Mode:**
+> 1. Run with `DRY_RUN=true` first (default)
+> 2. Review the container logs: `docker logs language-fixer`
+> 3. Verify the planned changes are correct
+> 4. Set `DRY_RUN=false` in your docker-compose.yml or environment
+> 5. Restart the container: `docker compose up -d`
 
 > **🔄 Automatic Updates:** Using `:latest` tag ensures automatic updates!
 > - Language-Fixer checks for new versions at startup
@@ -76,7 +84,7 @@ services:
       
       # Schedule & Behavior
       - RUN_INTERVAL_SECONDS=43200  # 12 hours
-      - DRY_RUN=false
+      - DRY_RUN=true                # SAFE DEFAULT: Review changes first!
       - RUN_CLEANUP=true
       
       # Audio Configuration
@@ -120,17 +128,17 @@ services:
 ### Docker Run
 
 ```bash
-docker run -d \\
-  --name language-fixer \\
-  --restart unless-stopped \\
-  -v /path/to/config:/config \\
-  -v /path/to/movies:/media/movies \\
-  -v /path/to/tv:/media/tv \\
-  -e PUID=1000 \\
-  -e PGID=1000 \\
-  -e DRY_RUN=false \\
-  -e KEEP_AUDIO_LANGS=eng,jpn \\
-  -e DEFAULT_AUDIO_LANG=eng \\
+docker run -d \
+  --name language-fixer \
+  --restart unless-stopped \
+  -v /path/to/config:/config \
+  -v /path/to/movies:/media/movies \
+  -v /path/to/tv:/media/tv \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e DRY_RUN=true \
+  -e KEEP_AUDIO_LANGS=eng,jpn \
+  -e DEFAULT_AUDIO_LANG=eng \
   luckyone94/language-fixer:latest
 ```
 
@@ -413,7 +421,11 @@ docker exec language-fixer python3 debug_database.py
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [OPTIMIZATION.md](OPTIMIZATION.md) for technical details about recent performance improvements.
+We welcome contributions! Please feel free to:
+- Submit bug reports and feature requests via [GitHub Issues](https://github.com/Randomname653/language-fixer/issues)
+- Create pull requests with improvements or bug fixes
+- Share your configuration examples and use cases
+- Contribute to documentation and translations
 
 ### Development Setup
 
