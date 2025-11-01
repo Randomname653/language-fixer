@@ -2,6 +2,8 @@
 
 A powerful Docker-based automation tool for managing audio and subtitle language metadata in media libraries. Integrates seamlessly with Sonarr and Radarr to automatically detect, tag, and organize your movie and TV show collections.
 
+> **🧠 Born from Frustration:** After finding countless tools that *almost* met the needs of a meticulous media monk, this project was born from a simple idea: create a tool that actually does what you want it to do. No compromises, no "close enough" solutions - just intelligent automation that works exactly as intended.
+
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/luckyone94/language-fixer)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -432,7 +434,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **OpenAI Whisper** for AI-powered language detection
 - **Sonarr/Radarr** for media library management integration
 - **MKVToolNix** for efficient metadata editing
+- **The countless "almost-perfect" tools** that inspired the creation of something better
 
 ---
 
-**⭐ If this tool helps organize your media library, please consider starring the repository!**
+**⭐ If this tool finally gives you the media organization you've been searching for, please consider starring the repository!**
