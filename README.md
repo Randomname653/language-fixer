@@ -42,6 +42,11 @@ A powerful Docker-based automation tool for managing audio and subtitle language
 
 ## 🚀 Quick Start
 
+> **🔒 Safety First:** Language-Fixer now defaults to **DRY_RUN=true** for safety! 
+> - First run shows you **exactly** what would be changed
+> - Set `DRY_RUN=false` only after reviewing the planned changes
+> - Smart defaults automatically become conservative when DRY_RUN=false
+
 ### Docker Compose (Recommended)
 
 ```yaml
@@ -124,6 +129,8 @@ docker run -d \\
 
 ## ⚙️ Configuration
 
+> **📋 Startup Display:** Language-Fixer shows a **detailed configuration summary** for 30 seconds at startup, displaying all active settings, defaults used, and safety warnings. This gives you time to review and cancel if needed.
+
 ### 🔧 Core Settings
 
 | Variable | Default | Description |
@@ -134,25 +141,29 @@ docker run -d \\
 | `DB_PATH` | /config/langfixer.db | SQLite database location |
 | `LOG_LEVEL` | info | Logging level (debug, info, warning, error) |
 | `RUN_INTERVAL_SECONDS` | 43200 | Scan interval in seconds (12h default) |
-| `DRY_RUN` | false | Preview mode - no actual file changes |
+| `DRY_RUN` | **true** | **Safe mode - no file changes (NEW DEFAULT!)** |
 
 ### 🎵 Audio Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `REMOVE_AUDIO` | true | Remove unwanted audio tracks |
+| `REMOVE_AUDIO` | Smart* | Remove unwanted audio tracks |
 | `RENAME_AUDIO_TRACKS` | true | Standardize audio track titles |
 | `KEEP_AUDIO_LANGS` | jpn,deu,eng,und | Audio languages to preserve |
 | `DEFAULT_AUDIO_LANG` | jpn | Preferred default audio language |
-| `KEEP_COMMENTARY` | true | Preserve commentary tracks |
+| `KEEP_COMMENTARY` | true | Keep director's commentary |
+
+**Smart Default:* `true` when DRY_RUN=true, `false` when DRY_RUN=false (safety!)
 
 ### 📺 Subtitle Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `REMOVE_SUBTITLES` | true | Remove unwanted subtitle tracks |
+| `REMOVE_SUBTITLES` | Smart* | Remove unwanted subtitle tracks |
 | `KEEP_SUBTITLE_LANGS` | jpn,deu,eng | Subtitle languages to preserve |
 | `DEFAULT_SUBTITLE_LANG` | deu | Preferred default subtitle language |
+
+**Smart Default:* `true` when DRY_RUN=true, `false` when DRY_RUN=false (safety!)
 
 ### 🔗 Integration Settings
 

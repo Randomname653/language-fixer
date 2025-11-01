@@ -21,23 +21,24 @@ services:
       
       # === Schedule & Behavior ===
       - RUN_INTERVAL_SECONDS=43200          # 12 hours (43200 seconds)
-      - DRY_RUN=false                       # Set to 'true' for testing
+      - DRY_RUN=true                        # SAFE DEFAULT: No file changes!
       - RUN_CLEANUP=true                    # Remove temp files
       - MAX_FAILURES=3                      # Skip files after X failures
       
       # === Audio Configuration ===
+      # Smart defaults: true in DRY_RUN, false in production
       - REMOVE_AUDIO=true                   # Remove unwanted audio tracks
       - RENAME_AUDIO_TRACKS=true            # Standardize audio titles
       - KEEP_AUDIO_LANGS=jpn,deu,eng,und    # Languages to preserve
       - DEFAULT_AUDIO_LANG=jpn              # Preferred default language
       - KEEP_COMMENTARY=true                # Keep director's commentary
       
-      # === Subtitle Configuration ===
+      # === Subtitle Configuration ===  
+      # Smart defaults: true in DRY_RUN, false in production
       - REMOVE_SUBTITLES=true               # Remove unwanted subtitle tracks
       - KEEP_SUBTITLE_LANGS=jpn,deu,eng     # Languages to preserve
-      - DEFAULT_SUBTITLE_LANG=deu           # Preferred default language
-      
-      # === Processing Options ===
+      - DEFAULT_SUBTITLE_LANG=deu           # Preferred default language      # === Processing Options ===
+      # Smart defaults: true in DRY_RUN, false in production
       - REMOVE_ATTACHMENTS=false            # Remove all attachments
       - REMOVE_FONTS=false                  # Remove font attachments only
       - BATCH_COMMIT_SIZE=10                # Database commits every X files

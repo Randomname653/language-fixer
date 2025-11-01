@@ -44,7 +44,7 @@ DB_PATH = os.getenv("DB_PATH", "/config/langfixer.db")
 WHISPER_API_URL = os.getenv("WHISPER_API_URL")
 WHISPER_TIMEOUT = int(os.getenv("WHISPER_TIMEOUT", "300"))
 RUN_INTERVAL_SECONDS = int(os.getenv("RUN_INTERVAL_SECONDS", "43200"))
-DRY_RUN = parse_bool("DRY_RUN", False)
+DRY_RUN = parse_bool("DRY_RUN", True)  # Default TRUE for safety!
 MAX_FAILURES = int(os.getenv("MAX_FAILURES", "3"))
 SONARR_URL = os.getenv("SONARR_URL")
 RADARR_URL = os.getenv("RADARR_URL")
@@ -53,11 +53,15 @@ RADARR_API_KEY = os.getenv("RADARR_API_KEY")
 SONARR_PATHS_RAW = os.getenv("SONARR_PATHS", "/media/tv")
 RADARR_PATHS_RAW = os.getenv("RADARR_PATHS", "/media/movies")
 RUN_CLEANUP = parse_bool("RUN_CLEANUP", True)
-REMOVE_AUDIO = parse_bool("REMOVE_AUDIO", True)
-REMOVE_SUBTITLES = parse_bool("REMOVE_SUBTITLES", True)
-REMOVE_ATTACHMENTS = parse_bool("REMOVE_ATTACHMENTS", True)
-RENAME_AUDIO_TRACKS = parse_bool("RENAME_AUDIO_TRACKS", True)
-REMOVE_FONTS = parse_bool("REMOVE_FONTS", False)
+
+# Smart defaults: If DRY_RUN=false, then unset remove flags default to false (safe)
+# If DRY_RUN=true (default), then unset remove flags default to true (for testing)
+remove_default = DRY_RUN  # true in dry-run mode, false in production mode
+REMOVE_AUDIO = parse_bool("REMOVE_AUDIO", remove_default)
+REMOVE_SUBTITLES = parse_bool("REMOVE_SUBTITLES", remove_default)
+REMOVE_ATTACHMENTS = parse_bool("REMOVE_ATTACHMENTS", remove_default)
+RENAME_AUDIO_TRACKS = parse_bool("RENAME_AUDIO_TRACKS", True)  # Always safe
+REMOVE_FONTS = parse_bool("REMOVE_FONTS", False)  # Conservative default
 KEEP_COMMENTARY = parse_bool("KEEP_COMMENTARY", True)
 LOG_STATS_ON_COMPLETION = parse_bool("LOG_STATS_ON_COMPLETION", True)
 BATCH_COMMIT_SIZE = int(os.getenv("BATCH_COMMIT_SIZE", "10"))
@@ -113,6 +117,101 @@ MODIFIED_SONARR_PATHS = set(); MODIFIED_RADARR_PATHS = set(); SCAN_PATHS = {}
 MODIFIED_SONARR_PATHS = set()
 MODIFIED_RADARR_PATHS = set()
 SCAN_PATHS = {}
+
+def print_configuration_summary():
+    """Zeigt alle verwendeten Konfigurationswerte für 30 Sekunden an."""
+    print("\n" + "="*80)
+    print("🔧 LANGUAGE-FIXER KONFIGURATION")
+    print("="*80)
+    
+    # Safety Mode
+    safety_icon = "🔒" if DRY_RUN else "⚠️"
+    print(f"{safety_icon} MODUS:           {'DRY-RUN (SICHER - keine Änderungen)' if DRY_RUN else 'PRODUKTIONS-MODUS (Dateien werden geändert!)'}")
+    print()
+    
+    # Core Settings
+    print("📁 KERN-EINSTELLUNGEN:")
+    print(f"   Database:         {DB_PATH}")
+    print(f"   Log Level:        {LOG_LEVEL_FROM_ENV}")
+    print(f"   Scan Interval:    {RUN_INTERVAL_SECONDS}s ({RUN_INTERVAL_SECONDS//3600}h {(RUN_INTERVAL_SECONDS%3600)//60}m)")
+    print(f"   Max Failures:     {MAX_FAILURES}")
+    print(f"   Batch Commits:    {BATCH_COMMIT_SIZE} Dateien")
+    print()
+    
+    # Processing Logic
+    print("⚙️ VERARBEITUNGS-LOGIK:")
+    safe_mode_note = " (auto: false wenn DRY_RUN=false)" if not DRY_RUN else " (auto: true wenn DRY_RUN=true)"
+    audio_note = safe_mode_note if os.getenv("REMOVE_AUDIO") is None else " (explizit gesetzt)"
+    sub_note = safe_mode_note if os.getenv("REMOVE_SUBTITLES") is None else " (explizit gesetzt)"
+    att_note = safe_mode_note if os.getenv("REMOVE_ATTACHMENTS") is None else " (explizit gesetzt)"
+    
+    print(f"   Remove Audio:     {REMOVE_AUDIO}{audio_note}")
+    print(f"   Remove Subtitles: {REMOVE_SUBTITLES}{sub_note}")
+    print(f"   Remove Attachments: {REMOVE_ATTACHMENTS}{att_note}")
+    print(f"   Rename Audio:     {RENAME_AUDIO_TRACKS}")
+    print(f"   Remove Fonts:     {REMOVE_FONTS}")
+    print(f"   Keep Commentary:  {KEEP_COMMENTARY}")
+    print(f"   Cleanup:          {RUN_CLEANUP}")
+    print()
+    
+    # Language Settings
+    print("🌐 SPRACH-EINSTELLUNGEN:")
+    print(f"   Keep Audio:       {', '.join(sorted(KEEP_AUDIO_LANGS))}")
+    print(f"   Keep Subtitles:   {', '.join(sorted(KEEP_SUBTITLE_LANGS))}")
+    print(f"   Default Audio:    {DEFAULT_AUDIO_LANG}")
+    print(f"   Default Subtitle: {DEFAULT_SUBTITLE_LANG}")
+    print()
+    
+    # Timeouts
+    print("⏱️ TIMEOUT-EINSTELLUNGEN:")
+    print(f"   FFmpeg:           {FFMPEG_TIMEOUT}s ({FFMPEG_TIMEOUT//60}min)")
+    print(f"   mkvpropedit:      {MKVPROPEDIT_TIMEOUT}s ({MKVPROPEDIT_TIMEOUT//60}min)")
+    print(f"   Sampling:         {FFMPEG_SAMPLE_TIMEOUT}s")
+    print(f"   Whisper API:      {WHISPER_TIMEOUT}s ({WHISPER_TIMEOUT//60}min)")
+    print()
+    
+    # Integrations
+    print("🔗 INTEGRATIONEN:")
+    print(f"   Whisper API:      {'✅ Aktiviert' if WHISPER_API_URL else '❌ Deaktiviert'}")
+    print(f"   Sonarr:           {'✅ Aktiviert' if SONARR_URL and SONARR_API_KEY else '❌ Deaktiviert'}")
+    print(f"   Radarr:           {'✅ Aktiviert' if RADARR_URL and RADARR_API_KEY else '❌ Deaktiviert'}")
+    print()
+    
+    # Paths
+    print("📂 ÜBERWACHTE PFADE:")
+    if SCAN_PATHS.get("sonarr"):
+        print(f"   Sonarr:           {', '.join(SCAN_PATHS['sonarr'])}")
+    if SCAN_PATHS.get("radarr"):
+        print(f"   Radarr:           {', '.join(SCAN_PATHS['radarr'])}")
+    print()
+    
+    # Safety Warning
+    if not DRY_RUN:
+        print("⚠️" * 20)
+        print("⚠️  WARNUNG: PRODUKTIONS-MODUS AKTIV!")
+        print("⚠️  Dateien werden tatsächlich geändert!")
+        print("⚠️  Setze DRY_RUN=true zum Testen!")
+        print("⚠️" * 20)
+    else:
+        print("🔒" * 20)
+        print("🔒  SICHER: DRY-RUN MODUS AKTIV")
+        print("🔒  Keine Dateien werden geändert")
+        print("🔒  Setze DRY_RUN=false für echte Änderungen")
+        print("🔒" * 20)
+    
+    print("="*80)
+    print("⏳ Warte 30 Sekunden, damit Konfiguration gelesen werden kann...")
+    print("   (Drücke Ctrl+C zum Abbrechen)")
+    print("="*80)
+    
+    # 30 second countdown
+    for i in range(30, 0, -1):
+        print(f"\r⏳ Starte in {i:2d} Sekunden... {'🔒 DRY-RUN' if DRY_RUN else '⚠️ PRODUKTIV'}", end="", flush=True)
+        time.sleep(1)
+    
+    print(f"\n🚀 Starting Language-Fixer {'(DRY-RUN)' if DRY_RUN else '(PRODUKTIV)'}!")
+    print("="*80)
+    print()
 class ScanStats:
     def __init__(self):
         self.start_time=datetime.now(); self.dirs_scanned=0; self.files_checked=0; self.files_skipped_db=0
@@ -931,14 +1030,11 @@ def run_scan(cursor, conn=None):
 
 def main_loop():
     setup_logging()
-    logging.info(f"🚀 Language Fixer Service (v1.1 ReviewFix) gestartet. DRY_RUN={DRY_RUN}") # Version angepasst
-    logging.info(f"   DB: {DB_PATH}, Whisper: {'Aktiviert' if WHISPER_API_URL else 'Deaktiviert'}")
-    logging.info(f"   Cleanup:{RUN_CLEANUP}, RemAud:{REMOVE_AUDIO}, RemSub:{REMOVE_SUBTITLES}, RemAtt:{REMOVE_ATTACHMENTS}")
-    logging.info(f"   RenAud:{RENAME_AUDIO_TRACKS}, KeepComm:{KEEP_COMMENTARY}")
-    logging.info(f"   KeepAudio: {KEEP_AUDIO_LANGS}")
-    logging.info(f"   KeepSubs:  {KEEP_SUBTITLE_LANGS}")
-    logging.info(f"   DefAud:'{DEFAULT_AUDIO_LANG}', DefSub:'{DEFAULT_SUBTITLE_LANG}'")
-    logging.info(f"   Timeouts: FFMPEG={FFMPEG_TIMEOUT}s, MKVProp={MKVPROPEDIT_TIMEOUT}s, Whisper={WHISPER_TIMEOUT}s, Sample={FFMPEG_SAMPLE_TIMEOUT}s")
+    
+    # Show detailed configuration summary with 30-second display
+    print_configuration_summary()
+    
+    logging.info(f"🚀 Language Fixer Service (v2.0 SafeDefaults) gestartet. DRY_RUN={DRY_RUN}")
 
     try:
         SCAN_PATHS["sonarr"] = [p.strip() for p in SONARR_PATHS_RAW.split(',') if p.strip()]
