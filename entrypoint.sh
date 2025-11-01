@@ -25,30 +25,35 @@ echo "📋 User Setup:"
 echo "   PUID: $PUID"
 echo "   PGID: $PGID"
 
-# Create group if it doesn't exist
-if ! getent group "$PGID" > /dev/null 2>&1; then
+# Check if group exists by GID
+if getent group "$PGID" >/dev/null 2>&1; then
+    EXISTING_GROUP=$(getent group "$PGID" | cut -d: -f1)
+    echo "   ✓ Group $PGID already exists ($EXISTING_GROUP)"
+else
     echo "   Creating group with GID $PGID..."
-    groupadd -g "$PGID" "$APP_USER" 2>/dev/null || {
-        echo "   Group $PGID already exists, continuing..."
-    }
-else
-    echo "   Group $PGID already exists"
+    if groupadd -g "$PGID" "$APP_USER" 2>/dev/null; then
+        echo "   ✓ Group created"
+    else
+        echo "   ⚠ Group creation failed (may already exist)"
+    fi
 fi
 
-# Create user if it doesn't exist
-if ! id -u "$PUID" > /dev/null 2>&1; then
-    echo "   Creating user with UID $PUID..."
-    useradd -u "$PUID" -g "$PGID" -M -s /bin/false "$APP_USER" 2>/dev/null || {
-        echo "   User $PUID already exists, continuing..."
-    }
-else
-    echo "   User $PUID already exists"
-    # Update APP_USER to the actual username for this UID
+# Check if user exists by UID
+if id "$PUID" >/dev/null 2>&1; then
     APP_USER=$(id -un "$PUID")
-    echo "   Using existing user: $APP_USER"
+    echo "   ✓ User $PUID already exists ($APP_USER)"
+else
+    echo "   Creating user with UID $PUID..."
+    if useradd -u "$PUID" -g "$PGID" -M -s /bin/false "$APP_USER" 2>/dev/null; then
+        echo "   ✓ User created"
+    else
+        echo "   ⚠ User creation failed (may already exist)"
+        # Try to get the username anyway
+        APP_USER=$(id -un "$PUID" 2>/dev/null || echo "appuser")
+    fi
 fi
 
-echo "   ✅ User setup complete"
+echo "   ✅ User setup complete (running as: $APP_USER)"
 
 # Take ownership of necessary paths
 echo "📁 Setting permissions..."
