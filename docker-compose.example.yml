@@ -1,0 +1,129 @@
+version: '3.8'
+
+# Language-Fixer Docker Compose Example
+# Copy this file to docker-compose.yml and adjust paths and settings
+
+services:
+  language-fixer:
+    image: luckyone94/language-fixer:latest
+    container_name: language-fixer
+    restart: unless-stopped
+    
+    environment:
+      # === User Configuration ===
+      - PUID=1000                           # Your user ID (run: id -u)
+      - PGID=1000                           # Your group ID (run: id -g)
+      - TZ=Europe/Berlin                    # Your timezone
+      
+      # === Database & Logging ===
+      - DB_PATH=/config/langfixer.db        # Database location
+      - LOG_LEVEL=info                      # debug, info, warning, error
+      
+      # === Schedule & Behavior ===
+      - RUN_INTERVAL_SECONDS=43200          # 12 hours (43200 seconds)
+      - DRY_RUN=true                        # SAFE DEFAULT: No file changes!
+      - RUN_CLEANUP=true                    # Remove temp files
+      - MAX_FAILURES=3                      # Skip files after X failures
+      
+      # === Audio Configuration ===
+      # Smart defaults: true in DRY_RUN, false in production
+      - REMOVE_AUDIO=true                   # Remove unwanted audio tracks
+      - RENAME_AUDIO_TRACKS=true            # Standardize audio titles
+      - KEEP_AUDIO_LANGS=jpn,deu,eng,und    # Languages to preserve
+      - DEFAULT_AUDIO_LANG=jpn              # Preferred default language
+      - KEEP_COMMENTARY=true                # Keep director's commentary
+      
+      # === Subtitle Configuration ===  
+      # Smart defaults: true in DRY_RUN, false in production
+      - REMOVE_SUBTITLES=true               # Remove unwanted subtitle tracks
+      - KEEP_SUBTITLE_LANGS=jpn,deu,eng     # Languages to preserve
+      - DEFAULT_SUBTITLE_LANG=deu           # Preferred default language      # === Processing Options ===
+      # Smart defaults: true in DRY_RUN, false in production
+      - REMOVE_ATTACHMENTS=false            # Remove all attachments
+      - REMOVE_FONTS=false                  # Remove font attachments only
+      - BATCH_COMMIT_SIZE=10                # Database commits every X files
+      
+      # === Performance Timeouts ===
+      - FFMPEG_TIMEOUT=1800                 # FFmpeg timeout (30 minutes)
+      - MKVPROPEDIT_TIMEOUT=300             # mkvpropedit timeout (5 minutes)  
+      - FFMPEG_SAMPLE_TIMEOUT=60            # Audio sampling timeout (1 minute)
+      
+      # === Optional: AI Language Detection ===
+      # Uncomment to enable Whisper API for unknown languages
+      # See README.md for complete Whisper stack setup
+      # - WHISPER_API_URL=http://openai-whisper-asr-webservice:9000/asr
+      # - WHISPER_TIMEOUT=300
+      
+      # === Optional: Sonarr Integration ===
+      # Uncomment and configure for TV show libraries
+      # - SONARR_URL=http://sonarr:8989
+      # - SONARR_API_KEY=your-sonarr-api-key-here
+      # - SONARR_PATHS=/media/tv,/media/anime
+      
+      # === Optional: Radarr Integration ===
+      # Uncomment and configure for movie libraries
+      # - RADARR_URL=http://radarr:7878
+      # - RADARR_API_KEY=your-radarr-api-key-here
+      # - RADARR_PATHS=/media/movies
+      
+    volumes:
+      # Configuration and database storage
+      - /path/to/config:/config
+      
+      # Media libraries (adjust paths to your setup)
+      - /path/to/movies:/media/movies
+      - /path/to/tv:/media/tv
+      - /path/to/anime:/media/anime
+      
+      # Optional: If you have separate folders
+      # - /path/to/documentaries:/media/documentaries
+      # - /path/to/music-videos:/media/music
+      
+    # Optional: Custom networks
+    # networks:
+    #   - media-network
+      
+    # Optional: Resource limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 4G
+    #       cpus: '2.0'
+
+# Uncomment if using custom networks
+# networks:
+#   media-network:
+#     external: true
+
+# ===================================================================
+# Common Configuration Examples:
+
+# === Anime-Focused Setup ===
+# KEEP_AUDIO_LANGS=jpn,eng
+# DEFAULT_AUDIO_LANG=jpn
+# KEEP_SUBTITLE_LANGS=eng,deu
+# DEFAULT_SUBTITLE_LANG=eng
+
+# === Multi-Language European Setup ===
+# KEEP_AUDIO_LANGS=eng,deu,fra,spa
+# DEFAULT_AUDIO_LANG=deu
+# KEEP_SUBTITLE_LANGS=eng,deu,fra
+# DEFAULT_SUBTITLE_LANG=deu
+
+# === English-Only Minimalist ===
+# KEEP_AUDIO_LANGS=eng
+# DEFAULT_AUDIO_LANG=eng
+# KEEP_SUBTITLE_LANGS=eng
+# DEFAULT_SUBTITLE_LANG=eng
+# REMOVE_SUBTITLES=false  # Keep all English subtitles
+
+# === Testing/Development ===
+# DRY_RUN=true
+# LOG_LEVEL=debug
+# RUN_INTERVAL_SECONDS=300  # 5 minutes for testing
+
+# === High-Performance Setup ===
+# BATCH_COMMIT_SIZE=50      # Larger batches for better performance
+# REMOVE_ATTACHMENTS=true   # Remove all attachments for space
+# REMOVE_FONTS=true         # Remove font files
+# RUN_CLEANUP=true          # Clean temp files aggressively
