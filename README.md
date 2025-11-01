@@ -6,7 +6,7 @@ A powerful Docker-based automation tool for managing audio and subtitle language
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/luckyone94/language-fixer)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg?style=for-the-badge)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 ## ✨ Features
 
@@ -426,7 +426,9 @@ cd language-fixer
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License - see the [LICENSE](LICENSE) file for details.
+
+**Non-Commercial Use Only:** This software may not be used for commercial purposes or sold. All other rights (use, modification, distribution) are granted under the CC BY-NC-SA 4.0 license.
 
 ## 🙏 Acknowledgments
 
