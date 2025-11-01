@@ -875,10 +875,15 @@ def trigger_arr_scan(url, key, paths, arr_type):
 
 
 # --- (6) HAUPTSCHLEIFE ---
-def run_scan(cursor):
+def run_scan(cursor, conn=None):
     logging.info("🔭 Starte Bibliotheks-Scan...")
     stats = ScanStats()
     if DRY_RUN: logging.info("!!! TROCKENLAUF-MODUS AKTIV !!!")
+    
+    # Batch-Commit Konfiguration
+    BATCH_COMMIT_SIZE = 10  # Commit alle 10 verarbeiteten Dateien
+    files_since_last_commit = 0
+    
     for atype, paths in SCAN_PATHS.items():
         for spath in paths:
             if not os.path.exists(spath): logging.warning(f"WARN: Pfad nicht gefunden: {spath}"); continue
@@ -896,7 +901,16 @@ def run_scan(cursor):
                         for f in files:
                             if f.lower().endswith(('.mkv', '.mp4')):
                                 full_path = os.path.join(root, f)
-                                try: process_file(cursor, full_path, atype, stats)
+                                try: 
+                                    process_file(cursor, full_path, atype, stats)
+                                    files_since_last_commit += 1
+                                    
+                                    # Batch-Commit: Alle N Dateien committen
+                                    if conn and files_since_last_commit >= BATCH_COMMIT_SIZE:
+                                        logging.debug(f"💾 Batch-Commit nach {files_since_last_commit} Dateien...")
+                                        conn.commit()
+                                        files_since_last_commit = 0
+                                        
                                 except Exception as proc_e:
                                     logging.error(f"!! Unerwarteter Fehler bei Verarbeitung von {f}: {proc_e}", exc_info=True)
                                     try: # Try to get mtime for failure count even after error
@@ -906,6 +920,12 @@ def run_scan(cursor):
                                         logging.error(f"Konnte mtime nicht lesen für Fehlerzählung von {f}: {mtime_e}")
                                     stats.files_failed += 1
                 except Exception as walk_e: logging.error(f"Fehler beim Durchlaufen von {item_path}: {walk_e}")
+    
+    # Final commit für verbleibende Änderungen
+    if conn and files_since_last_commit > 0:
+        logging.debug(f"💾 Final-Commit für verbleibende {files_since_last_commit} Dateien...")
+        conn.commit()
+    
     logging.info("✅ Bibliotheks-Scan abgeschlossen.")
     return stats
 
@@ -936,8 +956,8 @@ def main_loop():
         try:
             logging.debug("Öffne DB-Verbindung für den Scan-Lauf...")
             conn = sqlite3.connect(DB_PATH, timeout=30); cursor = conn.cursor()
-            current_stats = run_scan(cursor)
-            logging.info("Speichere Datenbankänderungen (Commit)..."); conn.commit()
+            current_stats = run_scan(cursor, conn)  # Pass connection for batch commits
+            logging.info("Speichere finale Datenbankänderungen (Commit)..."); conn.commit()
             logging.info("Datenbankänderungen gespeichert.")
         except sqlite3.OperationalError as db_lock_err: logging.error(f"❌ DB FEHLER: Datenbank ist gesperrt! Überspringe. Fehler: {db_lock_err}"); conn.rollback() if conn else None
         except sqlite3.Error as db_err: logging.error(f"❌ Kritischer DB-Fehler: {db_err}", exc_info=True); conn.rollback() if conn else None
