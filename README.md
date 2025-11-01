@@ -172,6 +172,17 @@ docker run -d \\
 | `WHISPER_API_URL` | - | OpenAI Whisper API endpoint |
 | `WHISPER_TIMEOUT` | 300 | Whisper API timeout (seconds) |
 
+### 🔧 Advanced Options
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAX_FAILURES` | 3 | Skip files after X failures |
+| `BATCH_COMMIT_SIZE` | 10 | Database commits every X files |
+| `FFMPEG_TIMEOUT` | 1800 | FFmpeg processing timeout (seconds) |
+| `MKVPROPEDIT_TIMEOUT` | 300 | mkvpropedit timeout (seconds) |
+| `FFMPEG_SAMPLE_TIMEOUT` | 60 | Audio sampling timeout (seconds) |
+| `LOG_STATS_ON_COMPLETION` | true | Log detailed statistics after scan |
+
 ## 📖 How It Works
 
 ### 1. 🔍 File Discovery

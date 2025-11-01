@@ -60,6 +60,7 @@ RENAME_AUDIO_TRACKS = parse_bool("RENAME_AUDIO_TRACKS", True)
 REMOVE_FONTS = parse_bool("REMOVE_FONTS", False)
 KEEP_COMMENTARY = parse_bool("KEEP_COMMENTARY", True)
 LOG_STATS_ON_COMPLETION = parse_bool("LOG_STATS_ON_COMPLETION", True)
+BATCH_COMMIT_SIZE = int(os.getenv("BATCH_COMMIT_SIZE", "10"))
 
 # Process Subprocess Timeouts from Env Vars
 FFMPEG_TIMEOUT = int(os.getenv("FFMPEG_TIMEOUT", "1800")) # Default 30 minutes
@@ -881,7 +882,6 @@ def run_scan(cursor, conn=None):
     if DRY_RUN: logging.info("!!! TROCKENLAUF-MODUS AKTIV !!!")
     
     # Batch-Commit Konfiguration
-    BATCH_COMMIT_SIZE = 10  # Commit alle 10 verarbeiteten Dateien
     files_since_last_commit = 0
     
     for atype, paths in SCAN_PATHS.items():

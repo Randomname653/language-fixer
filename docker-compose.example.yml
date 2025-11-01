@@ -42,6 +42,11 @@ services:
       - REMOVE_FONTS=false                  # Remove font attachments only
       - BATCH_COMMIT_SIZE=10                # Database commits every X files
       
+      # === Performance Timeouts ===
+      - FFMPEG_TIMEOUT=1800                 # FFmpeg timeout (30 minutes)
+      - MKVPROPEDIT_TIMEOUT=300             # mkvpropedit timeout (5 minutes)  
+      - FFMPEG_SAMPLE_TIMEOUT=60            # Audio sampling timeout (1 minute)
+      
       # === Optional: AI Language Detection ===
       # Uncomment to enable Whisper API for unknown languages
       # - WHISPER_API_URL=http://whisper-server:9000/asr
