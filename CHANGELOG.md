@@ -5,6 +5,23 @@ All notable changes to language-fixer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-11-01
+
+### 🔧 Improved
+- **Container Startup Banner**: Added prominent version display at container startup
+  - Version is now shown immediately when container starts
+  - Dynamically extracted from language_fixer.py (always accurate)
+  - Visual separators for better readability
+  - Improved startup logging structure
+  - Easier to identify which version is running
+
+### 📚 Technical Details
+- Version banner appears before all other startup messages
+- Uses grep to extract version from Python file
+- Consistent formatting with visual separators
+
+---
+
 ## [1.0.2] - 2025-11-01
 
 ### 🔧 Fixed
