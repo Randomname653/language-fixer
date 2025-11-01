@@ -9,6 +9,10 @@ services:
     container_name: language-fixer
     restart: unless-stopped
     
+    ports:
+      # Web UI Dashboard
+      - "8080:8080"
+    
     environment:
       # === User Configuration ===
       - PUID=1000                           # Your user ID (run: id -u)

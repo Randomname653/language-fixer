@@ -19,7 +19,7 @@ RUN apt-get update && \
 # Create virtual environment and install Python packages
 RUN python3 -m venv /opt/venv && \
     . /opt/venv/bin/activate && \
-    pip install --no-cache-dir requests && \
+    pip install --no-cache-dir requests flask && \
     chmod -R 755 /opt/venv && \
     chown -R 568:568 /opt/venv
 
@@ -30,7 +30,11 @@ ENV VIRTUAL_ENV="/opt/venv"
 WORKDIR /app
 
 COPY --chown=568:568 language_fixer.py .
+COPY --chown=568:568 web/ ./web/
 COPY entrypoint.sh .
 RUN chmod +x /app/entrypoint.sh
+
+# Expose web UI port
+EXPOSE 8080
 
 ENTRYPOINT ["/app/entrypoint.sh"]

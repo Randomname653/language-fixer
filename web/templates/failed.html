@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Failed Files - Language-Fixer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Failed Files</h5>
+                <span class="badge bg-danger">{{ files|length }} files</span>
+            </div>
+            <div class="card-body">
+                {% if files %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-info-circle"></i> These files failed to process. Click the retry button to attempt processing again.
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>File Path</th>
+                                <th>Status</th>
+                                <th>Last Attempt</th>
+                                <th>Failure Count</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in files %}
+                            <tr id="file-{{ loop.index }}">
+                                <td>
+                                    <i class="bi bi-file-earmark-x text-danger"></i>
+                                    <small>{{ file.file_path }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle"></i> {{ file.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ file.last_attempt }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">{{ file.failure_count }} attempts</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="retryFile('{{ file.file_path }}', {{ loop.index }})">
+                                        <i class="bi bi-arrow-clockwise"></i> Retry
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-success" role="alert">
+                    <i class="bi bi-check-circle"></i> Great! No failed files. All processing completed successfully.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function retryFile(filePath, rowId) {
+        if (!confirm('Retry processing for this file?')) {
+            return;
+        }
+        
+        const row = document.getElementById('file-' + rowId);
+        const btn = row.querySelector('button');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i> Retrying...';
+        
+        fetch('/api/retry/' + encodeURIComponent(filePath), { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('File reset for retry! It will be processed in the next scan.');
+                    row.style.backgroundColor = '#d4edda';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    alert('Failed to retry: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Retry';
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Retry';
+            });
+    }
+</script>
+<style>
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .spinning {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
+</style>
+{% endblock %}

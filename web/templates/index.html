@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-1">System Status</h5>
+                    <p class="card-text text-muted mb-0">
+                        {% if last_scan %}
+                            Last scan: {{ last_scan }}
+                        {% else %}
+                            No scans completed yet
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    {% if status == 'running' %}
+                        <span class="badge bg-primary status-badge">
+                            <i class="bi bi-arrow-repeat spinning"></i> Running
+                        </span>
+                    {% elif status == 'scanning' %}
+                        <span class="badge bg-info status-badge">
+                            <i class="bi bi-search"></i> Scanning
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary status-badge">
+                            <i class="bi bi-pause-circle"></i> Idle
+                        </span>
+                    {% endif %}
+                    <button class="btn btn-primary" onclick="triggerScan()" id="scanBtn">
+                        <i class="bi bi-play-circle"></i> Scan Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_file %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-file-earmark-play"></i> Currently processing: <strong>{{ current_file }}</strong>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Processed</h6>
+                        <h2 class="mb-0">{{ stats.total_processed }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle text-primary" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Success Rate</h6>
+                        <h2 class="mb-0">{{ stats.success_rate }}%</h2>
+                    </div>
+                    <i class="bi bi-graph-up-arrow text-success" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Failed Files</h6>
+                        <h2 class="mb-0">{{ stats.total_failed }}</h2>
+                    </div>
+                    <i class="bi bi-x-circle text-danger" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Last 24 Hours</h6>
+                        <h2 class="mb-0">{{ stats.last_24h }}</h2>
+                    </div>
+                    <i class="bi bi-clock-history text-info" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <a href="/files" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-list-ul"></i> View All Processed Files
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="/failed" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-exclamation-circle"></i> View Failed Files
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="/settings" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-gear"></i> View Configuration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .spinning {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
+</style>
+<script>
+    function triggerScan() {
+        const btn = document.getElementById('scanBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spinning"></i> Starting...';
+        
+        fetch('/api/scan', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Scan started successfully!');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('Failed to start scan: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-play-circle"></i> Scan Now';
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-circle"></i> Scan Now';
+            });
+    }
+    
+    // Auto-refresh status every 10 seconds
+    setInterval(() => {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                // Update status badge if needed
+                console.log('Status:', data.status);
+            });
+    }, 10000);
+</script>
+{% endblock %}

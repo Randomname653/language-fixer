@@ -10,7 +10,15 @@ A powerful Docker-based automation tool for managing audio and subtitle language
 
 ## ✨ Features
 
-### 🎵 Audio Management
+### � Web UI Dashboard (NEW!)
+- **Status Overview**: Real-time monitoring of processing status
+- **Statistics Dashboard**: Total processed files, success rates, and trends
+- **File Browser**: View recently processed and failed files
+- **Manual Controls**: Trigger scans and retry failed files with one click
+- **Configuration Viewer**: See your current settings at a glance
+- **Responsive Design**: Works on desktop, tablet, and mobile
+
+### �🎵 Audio Management
 - **Smart Language Detection**: Uses Whisper API for automatic audio language identification
 - **Language Tagging**: Automatically sets correct language metadata (eng, jpn, deu, etc.)
 - **Audio Title Formatting**: Standardizes track titles (e.g., "Dolby Digital 2.0 (English)")
@@ -72,6 +80,8 @@ services:
     image: luckyone94/language-fixer:latest
     container_name: language-fixer
     restart: unless-stopped
+    ports:
+      - "8080:8080"  # Web UI Dashboard
     environment:
       # User Configuration
       - PUID=1000
@@ -244,6 +254,28 @@ The AI language detection is particularly useful for:
 
 **Without Whisper:** Files tagged as `und` are kept as-is (if `und` is in `KEEP_AUDIO_LANGS`)
 **With Whisper:** Files tagged as `und` are analyzed and retagged with detected language
+
+## 🌐 Web UI Dashboard
+
+Access the built-in web dashboard at `http://localhost:8080` (or your server IP).
+
+### Features
+- **📊 Dashboard**: Real-time status, statistics, and recent activity
+- **📁 File Browser**: View all processed files with timestamps
+- **❌ Failed Files**: See errors and retry processing with one click  
+- **⚙️ Settings**: View your current configuration
+- **🚀 Manual Scan**: Trigger processing runs on demand
+
+### Screenshots
+The Web UI provides an intuitive interface for:
+- Monitoring processing status and progress
+- Viewing success rates and statistics
+- Managing failed files and retrying
+- Triggering manual scans without CLI access
+
+**No configuration needed** - the Web UI starts automatically with the container!
+
+---
 
 ## ⚙️ Configuration
 

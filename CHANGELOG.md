@@ -5,6 +5,39 @@ All notable changes to language-fixer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0-beta.1] - 2025-11-01
+
+### 🌐 Added - Web UI Dashboard (Beta)
+- **Flask-based Web Interface**: Built-in dashboard accessible at port 8080
+  - Real-time status monitoring and statistics
+  - Dashboard page with current processing status
+  - Processed files browser with timestamps
+  - Failed files management with one-click retry
+  - Read-only configuration viewer
+  - Manual scan trigger button
+- **Responsive Design**: Bootstrap 5 UI works on desktop, tablet, and mobile
+- **API Endpoints**: RESTful API for status, stats, and control operations
+- **Background Integration**: Web server runs in separate thread without blocking main processing
+
+### 🔧 Changed
+- Added Flask as dependency in Dockerfile
+- Exposed port 8080 for Web UI access
+- Updated docker-compose.example.yml with port mapping
+- Enhanced README with Web UI documentation and screenshots section
+
+### 📚 Documentation
+- Added comprehensive Web UI feature documentation in README
+- Updated feature list to highlight Web UI capabilities
+- Added quick start instructions for accessing Web UI
+
+### ⚠️ Beta Notes
+- This is a beta release for testing the new Web UI feature
+- Stable version (v1.0.2) remains available on main branch
+- Report issues on GitHub if you encounter problems
+- Web UI requires port 8080 to be exposed/mapped
+
+---
+
 ## [1.0.2] - 2025-11-01
 
 ### 🔧 Fixed

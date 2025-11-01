@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Language-Fixer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> Configuration (Read-Only)</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i> These settings are read-only. To change configuration, update your docker-compose.yml or environment variables and restart the container.
+                </div>
+                
+                <h6 class="mt-4 mb-3">Core Settings</h6>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">DRY_RUN</th>
+                            <td>
+                                {% if config.DRY_RUN == 'true' %}
+                                    <span class="badge bg-warning text-dark">Enabled (Safe Mode)</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Disabled (Production Mode)</span>
+                                {% endif %}
+                                <small class="text-muted d-block mt-1">When enabled, no actual file changes are made</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Scan Interval</th>
+                            <td>{{ config.RUN_INTERVAL_SECONDS }} seconds ({{ (config.RUN_INTERVAL_SECONDS|int / 3600)|round(1) }} hours)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="mt-4 mb-3">Audio Settings</h6>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">Keep Audio Languages</th>
+                            <td>
+                                {% for lang in config.KEEP_AUDIO_LANGS.split(',') %}
+                                    <span class="badge bg-primary">{{ lang }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Default Audio Language</th>
+                            <td><span class="badge bg-success">{{ config.DEFAULT_AUDIO_LANG }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Remove Audio Tracks</th>
+                            <td>{{ config.REMOVE_AUDIO }}</td>
+                        </tr>
+                        <tr>
+                            <th>Rename Audio Tracks</th>
+                            <td>{{ config.RENAME_AUDIO_TRACKS }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="mt-4 mb-3">Subtitle Settings</h6>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">Keep Subtitle Languages</th>
+                            <td>
+                                {% for lang in config.KEEP_SUBTITLE_LANGS.split(',') %}
+                                    <span class="badge bg-primary">{{ lang }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Default Subtitle Language</th>
+                            <td><span class="badge bg-success">{{ config.DEFAULT_SUBTITLE_LANG }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Remove Subtitle Tracks</th>
+                            <td>{{ config.REMOVE_SUBTITLES }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="mt-4 mb-3">Integration Settings</h6>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">Whisper API</th>
+                            <td>
+                                {% if config.WHISPER_API_URL != 'Not configured' %}
+                                    <span class="badge bg-success">Configured</span>
+                                    <small class="text-muted d-block">{{ config.WHISPER_API_URL }}</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not configured</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Sonarr Integration</th>
+                            <td>
+                                {% if config.SONARR_URL != 'Not configured' %}
+                                    <span class="badge bg-success">Configured</span>
+                                    <small class="text-muted d-block">{{ config.SONARR_URL }}</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not configured</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Radarr Integration</th>
+                            <td>
+                                {% if config.RADARR_URL != 'Not configured' %}
+                                    <span class="badge bg-success">Configured</span>
+                                    <small class="text-muted d-block">{{ config.RADARR_URL }}</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not configured</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

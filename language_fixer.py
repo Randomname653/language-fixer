@@ -9,11 +9,12 @@ import requests
 import sqlite3
 import re
 import logging
+import threading
 from collections import Counter, defaultdict
 from datetime import datetime
 
 # --- VERSION INFORMATION ---
-__version__ = "1.0.2"
+__version__ = "1.1.0-beta.1"
 __app_name__ = "Language-Fixer"
 
 # --- EARLY DEFINITIONS ---
@@ -1128,5 +1129,40 @@ def main_loop():
         logging.info(f"🕒 Nächster Scan geplant in {RUN_INTERVAL_SECONDS/3600:.1f} Stunden.")
         time.sleep(RUN_INTERVAL_SECONDS)
 
+def start_web_ui():
+    """Start Flask web UI in background thread"""
+    try:
+        # Import web app
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'web'))
+        from app import run_web_ui, set_app_state
+        
+        # Set initial state
+        set_app_state({
+            'status': 'idle',
+            'last_scan': None,
+            'current_file': None,
+            'db_path': DB_PATH,
+            'scan_callback': lambda: logging.info("Manual scan triggered from Web UI")
+        })
+        
+        logging.info("🌐 Starting Web UI on port 8080...")
+        web_thread = threading.Thread(target=run_web_ui, kwargs={'host': '0.0.0.0', 'port': 8080}, daemon=True)
+        web_thread.start()
+        logging.info("✅ Web UI started successfully!")
+        logging.info("   Access at: http://localhost:8080")
+        return True
+    except ImportError as e:
+        logging.warning(f"⚠️ Web UI not available: {e}")
+        logging.warning("   Continuing without Web UI...")
+        return False
+    except Exception as e:
+        logging.error(f"❌ Failed to start Web UI: {e}")
+        return False
+
 if __name__=="__main__":
+    # Start Web UI first
+    start_web_ui()
+    # Give web server time to start
+    time.sleep(2)
+    # Start main processing loop
     main_loop()
