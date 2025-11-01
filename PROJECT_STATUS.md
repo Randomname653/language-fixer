@@ -1,9 +1,9 @@
-# 🎬 Language-Fixer v1.0.4 - Log Message Fix
+# 🎬 Language-Fixer v1.0.5 - Simplified User Setup
 
 ## 📋 **Release Summary**
-**Date:** January 22, 2025  
-**Version:** 1.0.4  
-**Status:** ✅ Production Ready - Improved Container Startup Logs
+**Date:** November 2, 2025  
+**Version:** 1.0.5  
+**Status:** ✅ Production Ready - Reverted to sudo for reliability
 
 ---
 

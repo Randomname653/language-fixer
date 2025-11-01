@@ -25,35 +25,14 @@ echo "📋 User Setup:"
 echo "   PUID: $PUID"
 echo "   PGID: $PGID"
 
-# Check if group exists by GID
-if getent group "$PGID" >/dev/null 2>&1; then
-    EXISTING_GROUP=$(getent group "$PGID" | cut -d: -f1)
-    echo "   ✓ Group $PGID already exists ($EXISTING_GROUP)"
-else
-    echo "   Creating group with GID $PGID..."
-    if groupadd -g "$PGID" "$APP_USER" 2>/dev/null; then
-        echo "   ✓ Group created"
-    else
-        echo "   ⚠ Group creation failed (may already exist)"
-    fi
-fi
+# Simply ensure group and user exist, ignore if they already do
+groupadd -g "$PGID" "$APP_USER" 2>/dev/null || true
+useradd -u "$PUID" -g "$PGID" -M -s /bin/false "$APP_USER" 2>/dev/null || true
 
-# Check if user exists by UID
-if id "$PUID" >/dev/null 2>&1; then
-    APP_USER=$(id -un "$PUID")
-    echo "   ✓ User $PUID already exists ($APP_USER)"
-else
-    echo "   Creating user with UID $PUID..."
-    if useradd -u "$PUID" -g "$PGID" -M -s /bin/false "$APP_USER" 2>/dev/null; then
-        echo "   ✓ User created"
-    else
-        echo "   ⚠ User creation failed (may already exist)"
-        # Try to get the username anyway
-        APP_USER=$(id -un "$PUID" 2>/dev/null || echo "appuser")
-    fi
-fi
-
-echo "   ✅ User setup complete (running as: $APP_USER)"
+# Get actual username for this UID (might be different from APP_USER if it existed)
+ACTUAL_USER=$(id -un "$PUID" 2>/dev/null || echo "$APP_USER")
+echo "   ✅ Running as: $ACTUAL_USER ($PUID:$PGID)"
+echo ""
 
 # Take ownership of necessary paths
 echo "📁 Setting permissions..."
@@ -68,10 +47,10 @@ fi
 echo "   ✅ /opt/venv ownership pre-configured (build-time)"
 echo ""
 echo "============================================"
-echo "🚀 Starting application as user $APP_USER ($PUID:$PGID)..."
+echo "🚀 Starting application as $ACTUAL_USER ($PUID:$PGID)..."
 echo "   Command: python3 /app/language_fixer.py"
 echo "============================================"
 echo ""
 
-# Execute the main command as the specified user/group with full environment using gosu
-exec gosu "$PUID:$PGID" env PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"
+# Execute the main command as the specified user using sudo with full environment
+exec sudo -E -u "#$PUID" PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"

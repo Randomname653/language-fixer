@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
-## [1.0.4] - 2025-01-22
+## [1.0.5] - 2025-11-02
+
+### Changed
+- **Reverted to sudo**: Switched back from gosu to sudo for user switching (more reliable and faster)
+- **Simplified user setup**: Removed verbose logging, cleaner output with just essential info
+- **Container startup**: No more misleading "Creating group..." messages - silent creation with error suppression
+
+### Fixed
+- Container startup logs now show only relevant information
+- User/group setup works reliably without verbose status messages
+
+## [1.0.4] - 2025-11-02
 
 ### Fixed
 - **Container Startup Logs**: Improved group/user existence checks to eliminate misleading "Creating group..." messages when groups already exist

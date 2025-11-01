@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Berlin
 
-# Install gosu for lightweight user switching and other dependencies
+# Install sudo for user switching and other dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python3 \
@@ -11,7 +11,7 @@ RUN apt-get update && \
         python3-venv \
         mkvtoolnix \
         ffmpeg \
-        gosu \
+        sudo \
         tzdata && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
