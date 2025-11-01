@@ -205,3 +205,64 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Language-Fixer Specific
+# Database files
+*.db
+*.db-journal
+langfixer.db*
+database.db*
+
+# Configuration files with secrets
+config.ini
+.config
+*.conf
+secrets.env
+
+# Log files
+*.log
+logs/
+app.log*
+language_fixer.log*
+
+# Media files for testing
+test_media/
+sample_videos/
+*.mkv
+*.mp4
+*.avi
+*.mov
+
+# FFmpeg temp files
+ffmpeg_*
+temp_*
+*.temp
+
+# Docker development
+.docker/
+docker-compose.override.yml
+docker-compose.local.yml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Development and testing
+test_results/
+coverage_reports/
+.pytest_cache/
+.coverage
+
+# Performance test outputs
+performance_results.txt
+benchmark_*.json
