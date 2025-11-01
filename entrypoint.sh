@@ -1,11 +1,20 @@
 #!/bin/bash
 set -e
 
-echo "🐳 Language-Fixer Container Starting..."
+# Extract version from language_fixer.py
+VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' /app/language_fixer.py 2>/dev/null || echo "unknown")
+
+echo "============================================"
+echo "🎬 Language-Fixer v${VERSION}"
+echo "============================================"
+echo "🐳 Container Starting..."
+echo ""
 echo "🔍 Debug Info:"
+echo "   Version: ${VERSION}"
 echo "   Python: $(which python3)"
 echo "   PATH: $PATH"
 echo "   Virtual Env: $VIRTUAL_ENV"
+echo ""
 
 # Default IDs if not provided
 PUID=${PUID:-568}
@@ -52,9 +61,13 @@ else
 fi
 
 echo "   ✅ /opt/venv ownership pre-configured (build-time)"
-
+echo ""
+echo "============================================"
 echo "🚀 Starting application as user $APP_USER ($PUID:$PGID)..."
 echo "   Command: python3 /app/language_fixer.py"
+echo "   Web UI: http://localhost:8080"
+echo "============================================"
+echo ""
 
 # Execute the main command as the specified user/group with full environment using gosu
 exec gosu "$PUID:$PGID" env PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"
