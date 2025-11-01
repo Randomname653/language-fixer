@@ -42,10 +42,15 @@ A powerful Docker-based automation tool for managing audio and subtitle language
 
 ## 🚀 Quick Start
 
-> **🔒 Safety First:** Language-Fixer now defaults to **DRY_RUN=true** for safety! 
+> **🔒 Safety First:** Language-Fixer defaults to **DRY_RUN=true** for safety! 
 > - First run shows you **exactly** what would be changed
 > - Set `DRY_RUN=false` only after reviewing the planned changes
 > - Smart defaults automatically become conservative when DRY_RUN=false
+
+> **🔄 Automatic Updates:** Using `:latest` tag ensures automatic updates!
+> - Language-Fixer checks for new versions at startup
+> - Update with: `docker compose pull && docker compose up -d`
+> - Always review [release notes](https://github.com/Randomname653/language-fixer/releases) before updating
 
 ### Docker Compose (Recommended)
 

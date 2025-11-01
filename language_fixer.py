@@ -1,4 +1,4 @@
-# language_fixer_v1.1_final.py
+# language_fixer.py
 import os
 import subprocess
 import json
@@ -11,6 +11,10 @@ import re
 import logging
 from collections import Counter, defaultdict
 from datetime import datetime
+
+# --- VERSION INFORMATION ---
+__version__ = "1.0.0"
+__app_name__ = "Language-Fixer"
 
 # --- EARLY DEFINITIONS ---
 LOG_LEVEL_FROM_ENV = os.getenv("LOG_LEVEL", "info").upper()
@@ -121,8 +125,17 @@ SCAN_PATHS = {}
 def print_configuration_summary():
     """Zeigt alle verwendeten Konfigurationswerte für 30 Sekunden an."""
     print("\n" + "="*80)
-    print("🔧 LANGUAGE-FIXER KONFIGURATION")
+    print(f"🎬 {__app_name__.upper()} v{__version__}")
     print("="*80)
+    
+    # Version & Update Check
+    print("� VERSION & UPDATES:")
+    print(f"   Aktuelle Version: {__version__}")
+    print(f"   Update Check:     https://github.com/Randomname653/language-fixer/releases")
+    print(f"   Docker Image:     luckyone94/language-fixer:latest")
+    print("   💡 Tipp: Verwende ':latest' Tag für automatische Updates!")
+    print("   🔄 Update Befehl: docker compose pull && docker compose up -d")
+    print()
     
     # Safety Mode
     safety_icon = "🔒" if DRY_RUN else "⚠️"
@@ -342,6 +355,36 @@ def update_cumulative_stats(stats):
                 cursor.execute("UPDATE cumulative_lang_stats SET count = count + ? WHERE lang = ?", (count, lang))
     except sqlite3.Error as e:
         logging.warning(f"DB Update Stats Fehler: {e}")
+
+# --- VERSION CHECK ---
+def check_for_updates():
+    """Prüft GitHub API auf neue Versionen."""
+    try:
+        logging.debug("Prüfe GitHub API auf Updates...")
+        response = requests.get(
+            "https://api.github.com/repos/Randomname653/language-fixer/releases/latest",
+            timeout=10
+        )
+        if response.status_code == 200:
+            latest = response.json()
+            latest_version = latest.get("tag_name", "").lstrip("v")
+            if latest_version and latest_version != __version__:
+                logging.info(f"🆕 Neue Version verfügbar: v{latest_version} (aktuell: v{__version__})")
+                logging.info(f"📥 Download: {latest.get('html_url', 'https://github.com/Randomname653/language-fixer/releases')}")
+                logging.info("💡 Docker: Starte Container mit 'docker compose pull' neu für automatisches Update")
+                return latest_version
+            else:
+                logging.debug(f"✅ Version ist aktuell: v{__version__}")
+                return None
+        else:
+            logging.debug(f"GitHub API Fehler: HTTP {response.status_code}")
+            return None
+    except requests.exceptions.RequestException as e:
+        logging.debug(f"Version Check Fehler: {e}")
+        return None
+    except Exception as e:
+        logging.debug(f"Unerwarteter Version Check Fehler: {e}")
+        return None
 
 # --- (3) MEDIA-ANALYSE & HELPER ---
 def get_media_info(file_path):
@@ -1034,7 +1077,16 @@ def main_loop():
     # Show detailed configuration summary with 30-second display
     print_configuration_summary()
     
-    logging.info(f"🚀 Language Fixer Service (v2.0 SafeDefaults) gestartet. DRY_RUN={DRY_RUN}")
+    # Version information and update check
+    logging.info(f"🚀 {__app_name__} v{__version__} gestartet. DRY_RUN={DRY_RUN}")
+    
+    # Check for updates in background (non-blocking)
+    try:
+        newer_version = check_for_updates()
+        if newer_version:
+            logging.info(f"🔔 UPDATE VERFÜGBAR: v{newer_version} → Nutze 'docker compose pull && docker compose up -d' für Update")
+    except Exception as e:
+        logging.debug(f"Update-Check fehlgeschlagen: {e}")
 
     try:
         SCAN_PATHS["sonarr"] = [p.strip() for p in SONARR_PATHS_RAW.split(',') if p.strip()]
