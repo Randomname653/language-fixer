@@ -5,6 +5,24 @@ All notable changes to language-fixer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-11-01
+
+### 🔧 Fixed
+- **Container Startup Hanging**: Fixed critical bug where container would hang during user setup
+  - Improved user/group detection to handle existing UIDs/GIDs gracefully
+  - Added proper error handling for cases where UID 568 already exists
+  - Changed gosu to use UID:GID directly instead of username lookup
+  - Added more verbose logging for troubleshooting startup issues
+  - Fixed permission setting to continue on errors instead of failing
+
+### 🔍 Technical Details
+- Root Cause: v1.0.1's gosu implementation didn't handle existing users properly
+- Impact: Containers would hang indefinitely at "User Setup" stage
+- Solution: Detect existing users and use numeric UID:GID with gosu
+- Result: Container startup now completes in ~1.5 minutes as expected
+
+---
+
 ## [1.0.1] - 2025-11-01
 
 ### 🔧 Fixed
