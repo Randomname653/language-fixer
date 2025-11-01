@@ -35,9 +35,7 @@ else
     echo "   ⚠️ /config directory not mounted"
 fi
 
-# Ensure virtual environment is accessible to the app user
-chown -R "$PUID":"$PGID" /opt/venv
-echo "   ✅ /opt/venv ownership set"
+echo "   ✅ /opt/venv ownership pre-configured (build-time)"
 
 echo "🚀 Starting application as user $PUID group $PGID..."
 echo "   Command: python3 /app/language_fixer.py"

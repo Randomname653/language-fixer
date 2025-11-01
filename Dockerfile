@@ -19,7 +19,8 @@ RUN apt-get update && \
 RUN python3 -m venv /opt/venv && \
     . /opt/venv/bin/activate && \
     pip install --no-cache-dir requests && \
-    chmod -R 755 /opt/venv
+    chmod -R 755 /opt/venv && \
+    chown -R 568:568 /opt/venv
 
 # Ensure virtual environment is activated in all subsequent commands
 ENV PATH="/opt/venv/bin:$PATH"
