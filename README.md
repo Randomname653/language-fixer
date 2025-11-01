@@ -127,6 +127,109 @@ docker run -d \\
   luckyone94/language-fixer:latest
 ```
 
+## 🤖 Complete Stack with AI Language Detection
+
+For automatic language detection of unknown audio tracks, you can run a local Whisper ASR service alongside Language-Fixer:
+
+```yaml
+version: '3.8'
+
+services:
+  # AI-Powered Language Detection Service
+  openai-whisper-asr-webservice:
+    image: onerahmet/openai-whisper-asr-webservice:latest-gpu
+    container_name: whisper-asr
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+    environment:
+      - ASR_ENGINE=faster_whisper
+      - ASR_MODEL=small           # Options: tiny, small, medium, large
+      - ASR_DEVICE=cuda           # Use 'cpu' if no GPU available
+      - FASTER_WHISPER_COMPUTE_TYPE=float16
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: 1
+              driver: nvidia
+    # For CPU-only systems, remove the deploy section and set ASR_DEVICE=cpu
+
+  # Main Language-Fixer Service
+  language-fixer:
+    image: luckyone94/language-fixer:latest
+    container_name: language-fixer
+    restart: unless-stopped
+    depends_on:
+      - openai-whisper-asr-webservice
+    environment:
+      # User Configuration
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      
+      # Core Settings
+      - DRY_RUN=true              # Start safely!
+      - KEEP_AUDIO_LANGS=jpn,deu,eng,und
+      - DEFAULT_AUDIO_LANG=jpn
+      - KEEP_SUBTITLE_LANGS=jpn,deu,eng
+      - DEFAULT_SUBTITLE_LANG=deu
+      
+      # AI Language Detection Integration
+      - WHISPER_API_URL=http://openai-whisper-asr-webservice:9000/asr
+      - WHISPER_TIMEOUT=300
+      
+    volumes:
+      - /path/to/config:/config
+      - /path/to/movies:/media/movies
+      - /path/to/tv:/media/tv
+
+networks:
+  default:
+    name: media-stack
+```
+
+**📚 Whisper Service Details:**
+- **Repository:** [onerahmet/openai-whisper-asr-webservice](https://github.com/ahmetoner/whisper-asr-webservice)
+- **GPU Support:** NVIDIA GPU recommended for better performance
+- **CPU Fallback:** Remove `deploy` section and set `ASR_DEVICE=cpu` for CPU-only systems
+- **Model Options:** 
+  - `tiny` - Fastest, least accurate (~1GB VRAM)
+  - `small` - Balanced performance (~2GB VRAM) **[Recommended]**
+  - `medium` - Better accuracy (~5GB VRAM)
+  - `large` - Best accuracy (~10GB VRAM)
+- **Performance:** Processes 30-60 seconds of audio in 2-10 seconds (GPU) vs 30-120 seconds (CPU)
+
+### 💻 CPU-Only Alternative
+
+If you don't have an NVIDIA GPU, use the CPU version:
+
+```yaml
+  openai-whisper-asr-webservice:
+    image: onerahmet/openai-whisper-asr-webservice:latest  # Note: no '-gpu' suffix
+    container_name: whisper-asr
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+    environment:
+      - ASR_ENGINE=faster_whisper
+      - ASR_MODEL=tiny            # Use 'tiny' for CPU for better performance
+      - ASR_DEVICE=cpu
+    # Remove the entire 'deploy' section for CPU-only
+```
+
+### 🎯 When to Use Whisper Integration
+
+The AI language detection is particularly useful for:
+- **Raw/Untitled Media:** Files with `und` (undefined) language tags
+- **Mixed Collections:** Libraries from various sources with inconsistent tagging
+- **International Content:** Anime, foreign films, or multilingual media
+- **Batch Processing:** Automatically tag hundreds of files without manual review
+
+**Without Whisper:** Files tagged as `und` are kept as-is (if `und` is in `KEEP_AUDIO_LANGS`)
+**With Whisper:** Files tagged as `und` are analyzed and retagged with detected language
+
 ## ⚙️ Configuration
 
 > **📋 Startup Display:** Language-Fixer shows a **detailed configuration summary** for 30 seconds at startup, displaying all active settings, defaults used, and safety warnings. This gives you time to review and cancel if needed.
@@ -180,7 +283,7 @@ docker run -d \\
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WHISPER_API_URL` | - | OpenAI Whisper API endpoint |
+| `WHISPER_API_URL` | - | OpenAI Whisper API endpoint (see [Complete Stack](#-complete-stack-with-ai-language-detection)) |
 | `WHISPER_TIMEOUT` | 300 | Whisper API timeout (seconds) |
 
 ### 🔧 Advanced Options

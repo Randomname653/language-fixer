@@ -50,7 +50,8 @@ services:
       
       # === Optional: AI Language Detection ===
       # Uncomment to enable Whisper API for unknown languages
-      # - WHISPER_API_URL=http://whisper-server:9000/asr
+      # See README.md for complete Whisper stack setup
+      # - WHISPER_API_URL=http://openai-whisper-asr-webservice:9000/asr
       # - WHISPER_TIMEOUT=300
       
       # === Optional: Sonarr Integration ===
