@@ -26,5 +26,5 @@ echo "Setting ownership for /config..."
 chown -R "$PUID":"$PGID" /config
 
 echo "Starting application as user $PUID group $PGID..."
-# Execute the main command as the specified user/group with environment preserved
-exec sudo -E -u#"$PUID" -g#"$PGID" python3 /app/language_fixer.py "$@"
+# Execute the main command as the specified user/group with explicit PATH
+exec sudo -u#"$PUID" -g#"$PGID" PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"

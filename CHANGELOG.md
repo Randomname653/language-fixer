@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.10] - 2025-11-02
+
+### Fixed
+- **Critical**: Explicitly pass PATH and VIRTUAL_ENV to sudo command
+- The -E flag didn't work with sudo -u# syntax
+- Now using: sudo -u#UID -g#GID PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3
+
 ## [1.0.9] - 2025-11-02
 
 ### Fixed
