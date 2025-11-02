@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.8] - 2025-11-02
+
+### Fixed
+- **Critical**: Complete revert to v1.0.1 container setup (which worked reliably)
+- Back to gosu for user switching (instead of sudo)
+- Back to original user/group creation logic
+- Removed all "improvements" from v1.0.2-v1.0.7 that caused startup issues
+
+### Changed
+- Kept version banner feature from v1.0.3 (the only working improvement)
+- All other changes reverted to stable v1.0.1 baseline
+
+**Note**: v1.0.2-v1.0.7 had various startup issues. This version returns to the proven v1.0.1 approach.
+
 ## [1.0.7] - 2025-11-02
 
 ### Fixed
