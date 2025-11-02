@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.12] - 2025-11-02
+
+### Fixed
+- **Critical**: Pass through ALL environment variables to sudo command in entrypoint.sh
+- Previously only PATH and VIRTUAL_ENV were passed, all config vars were lost
+- Now explicitly passes DRY_RUN, SONARR_URL, RADARR_URL, and all other config variables
+- This is why DRY_RUN was always True (using default) despite being set to false
+
 ## [1.0.11] - 2025-11-02
 
 ### Fixed

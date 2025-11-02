@@ -26,5 +26,38 @@ echo "Setting ownership for /config..."
 chown -R "$PUID":"$PGID" /config
 
 echo "Starting application as user $PUID group $PGID..."
-# Execute the main command as the specified user/group with explicit PATH
-exec sudo -u#"$PUID" -g#"$PGID" PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"
+# Execute the main command as the specified user/group
+# Pass through all environment variables explicitly
+exec sudo -u#"$PUID" -g#"$PGID" \
+    PATH="/opt/venv/bin:$PATH" \
+    VIRTUAL_ENV="/opt/venv" \
+    DB_PATH="$DB_PATH" \
+    LOG_LEVEL="$LOG_LEVEL" \
+    RUN_INTERVAL_SECONDS="$RUN_INTERVAL_SECONDS" \
+    DRY_RUN="$DRY_RUN" \
+    MAX_FAILURES="$MAX_FAILURES" \
+    WHISPER_API_URL="$WHISPER_API_URL" \
+    WHISPER_TIMEOUT="$WHISPER_TIMEOUT" \
+    SONARR_URL="$SONARR_URL" \
+    SONARR_API_KEY="$SONARR_API_KEY" \
+    SONARR_PATHS="$SONARR_PATHS" \
+    RADARR_URL="$RADARR_URL" \
+    RADARR_API_KEY="$RADARR_API_KEY" \
+    RADARR_PATHS="$RADARR_PATHS" \
+    RUN_CLEANUP="$RUN_CLEANUP" \
+    REMOVE_AUDIO="$REMOVE_AUDIO" \
+    REMOVE_SUBTITLES="$REMOVE_SUBTITLES" \
+    REMOVE_ATTACHMENTS="$REMOVE_ATTACHMENTS" \
+    RENAME_AUDIO_TRACKS="$RENAME_AUDIO_TRACKS" \
+    REMOVE_FONTS="$REMOVE_FONTS" \
+    KEEP_COMMENTARY="$KEEP_COMMENTARY" \
+    LOG_STATS_ON_COMPLETION="$LOG_STATS_ON_COMPLETION" \
+    KEEP_AUDIO_LANGS="$KEEP_AUDIO_LANGS" \
+    KEEP_SUBTITLE_LANGS="$KEEP_SUBTITLE_LANGS" \
+    DEFAULT_AUDIO_LANG="$DEFAULT_AUDIO_LANG" \
+    DEFAULT_SUBTITLE_LANG="$DEFAULT_SUBTITLE_LANG" \
+    FFMPEG_TIMEOUT="$FFMPEG_TIMEOUT" \
+    MKVPROPEDIT_TIMEOUT="$MKVPROPEDIT_TIMEOUT" \
+    FFMPEG_SAMPLE_TIMEOUT="$FFMPEG_SAMPLE_TIMEOUT" \
+    BATCH_COMMIT_SIZE="$BATCH_COMMIT_SIZE" \
+    python3 /app/language_fixer.py "$@"
