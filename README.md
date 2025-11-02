@@ -1,4 +1,3 @@
-Here is a rewritten version of the README, focusing on the technical details and removing the conversational elements and emojis.
 Language-Fixer
 A powerful Docker-based automation tool for managing audio and subtitle language metadata in media libraries. It integrates with Sonarr and Radarr to automatically detect, tag, and organize your movie and TV show collections.
 Features
