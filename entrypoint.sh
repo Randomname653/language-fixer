@@ -24,14 +24,7 @@ APP_USER=appuser
 echo "📋 User Setup:"
 echo "   PUID: $PUID"
 echo "   PGID: $PGID"
-
-# Simply ensure group and user exist, ignore if they already do
-groupadd -g "$PGID" "$APP_USER" 2>/dev/null || true
-useradd -u "$PUID" -g "$PGID" -M -s /bin/false "$APP_USER" 2>/dev/null || true
-
-# Get actual username for this UID (might be different from APP_USER if it existed)
-ACTUAL_USER=$(id -un "$PUID" 2>/dev/null || echo "$APP_USER")
-echo "   ✅ Running as: $ACTUAL_USER ($PUID:$PGID)"
+echo "   ✅ Ready"
 echo ""
 
 # Take ownership of necessary paths
@@ -47,10 +40,10 @@ fi
 echo "   ✅ /opt/venv ownership pre-configured (build-time)"
 echo ""
 echo "============================================"
-echo "🚀 Starting application as $ACTUAL_USER ($PUID:$PGID)..."
+echo "🚀 Starting application as UID:GID $PUID:$PGID..."
 echo "   Command: python3 /app/language_fixer.py"
 echo "============================================"
 echo ""
 
-# Execute the main command as the specified user using sudo with full environment
-exec sudo -E -u "#$PUID" PATH="/opt/venv/bin:$PATH" VIRTUAL_ENV="/opt/venv" python3 /app/language_fixer.py "$@"
+# Execute the main command as the specified user using sudo with numeric UID
+exec sudo -E -u "#$PUID" python3 /app/language_fixer.py "$@"

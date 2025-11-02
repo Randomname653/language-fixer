@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.6] - 2025-11-02
+
+### Fixed
+- **Critical**: Container startup hang when user/group with PUID/PGID already exists
+- Removed user/group creation logic entirely - use numeric UID directly with sudo
+- Added sudo NOPASSWD configuration for seamless user switching
+- Container now starts immediately without attempting to create users/groups
+
+### Changed
+- Simplified user setup to absolute minimum - just verify PUID/PGID and start
+- Cleaner logs without unnecessary user creation attempts
+
 ## [1.0.5] - 2025-11-02
 
 ### Changed

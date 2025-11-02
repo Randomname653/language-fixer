@@ -1,9 +1,9 @@
-# 🎬 Language-Fixer v1.0.5 - Simplified User Setup
+# 🎬 Language-Fixer v1.0.6 - Container Startup Fix
 
 ## 📋 **Release Summary**
 **Date:** November 2, 2025  
-**Version:** 1.0.5  
-**Status:** ✅ Production Ready - Reverted to sudo for reliability
+**Version:** 1.0.6  
+**Status:** ✅ Production Ready - Fixed Container Hang Issue
 
 ---
 
