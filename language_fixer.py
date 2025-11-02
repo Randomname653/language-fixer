@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 # --- VERSION INFORMATION ---
-__version__ = "1.0.10"
+__version__ = "1.0.11"
 __app_name__ = "Language-Fixer"
 
 # --- EARLY DEFINITIONS ---
@@ -40,7 +40,11 @@ def setup_logging():
 # Helper function for parsing boolean env vars
 def parse_bool(env_var_name, default=False):
     """Parses a boolean environment variable ('true', '1', 't'). Case-insensitive."""
-    value = os.getenv(env_var_name, str(default)).lower()
+    raw_value = os.getenv(env_var_name, str(default))
+    value = raw_value.strip().strip('"').strip("'").lower()
+    # Debug output for DRY_RUN specifically
+    if env_var_name == "DRY_RUN":
+        print(f"🔍 DEBUG: DRY_RUN raw='{raw_value}' cleaned='{value}' -> {value in ('true', '1', 't')}")
     return value in ('true', '1', 't')
 
 # --- (1) CONFIGURATION ---
