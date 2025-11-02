@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.9] - 2025-11-02
+
+### Fixed
+- **Critical**: Added `-E` flag to sudo to preserve environment variables (PATH, VIRTUAL_ENV)
+- Container now properly uses Python venv with requests module available
+- Fixed ModuleNotFoundError for requests
+
 ## [1.0.8] - 2025-11-02
 
 ### Fixed

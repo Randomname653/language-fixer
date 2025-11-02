@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 # --- VERSION INFORMATION ---
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 __app_name__ = "Language-Fixer"
 
 # --- EARLY DEFINITIONS ---
