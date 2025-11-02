@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.13] - 2025-11-02
+
+### Fixed
+- **Critical**: Only pass non-empty environment variables to sudo
+- Fixed ValueError when BATCH_COMMIT_SIZE or other optional vars are unset
+- entrypoint.sh now checks if variables are set before passing them
+- Prevents empty string "" from being passed instead of None
+
 ## [1.0.12] - 2025-11-02
 
 ### Fixed
