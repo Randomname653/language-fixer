@@ -2,62 +2,62 @@
 
 A powerful Docker-based automation tool for managing audio and subtitle language metadata in media libraries. Integrates seamlessly with Sonarr and Radarr to automatically detect, tag, and organize your movie and TV show collections.
 
-> **🧠 Born from Frustration:** After finding countless tools that *almost* met the needs of a meticulous media monk, this project was born from a simple idea: create a tool that actually does what you want it to do. No compromises, no "close enough" solutions - just intelligent automation that works exactly as intended.
+> Born from Frustration: After finding countless tools that *almost* met the needs of a meticulous media monk, this project was born from a simple idea: create a tool that actually does what you want it to do. No compromises, no "close enough" solutions - just intelligent automation that works exactly as intended.
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/luckyone94/language-fixer)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg?style=for-the-badge)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-## ✨ Features
+## Features
 
-### 🎵 Audio Management
+### Audio Management
 - **Smart Language Detection**: Uses Whisper API for automatic audio language identification
 - **Language Tagging**: Automatically sets correct language metadata (eng, jpn, deu, etc.)
 - **Audio Title Formatting**: Standardizes track titles (e.g., "Dolby Digital 2.0 (English)")
 - **Default Track Management**: Intelligently sets default audio tracks based on language preferences
 - **Commentary Detection**: Preserves director's commentary and special audio tracks
 
-### 📺 Subtitle Management  
+### Subtitle Management  
 - **Language-based Filtering**: Keep only desired subtitle languages
 - **Default Track Assignment**: Automatically set preferred subtitle language as default
 - **Cleanup**: Remove unwanted subtitle tracks to save space
 
-### 🗂️ Container & Stream Management
+### Container & Stream Management
 - **MP4 → MKV Conversion**: Automatic container conversion for better metadata support
 - **Stream Removal**: Remove unwanted audio/subtitle/attachment streams
 - **Font Management**: Optional font attachment removal
 - **Efficient Processing**: Smart decision between full remux vs metadata-only edits
 
-### 🔄 Integration & Automation
+### Integration & Automation
 - **Sonarr Integration**: Automatic TV show library scanning and updates
 - **Radarr Integration**: Seamless movie library management
 - **Scheduled Scanning**: Configurable intervals for library maintenance
 - **Progress Tracking**: SQLite database prevents reprocessing of files
 - **Batch Processing**: Efficient handling of large libraries
 
-### 🛡️ Reliability & Performance
+### Reliability & Performance
 - **Crash-Safe Database**: Batch commits prevent data loss during interruptions
 - **Smart Remux Logic**: Only performs full remux when structurally necessary
 - **Metadata-Only Edits**: Uses mkvpropedit for lightning-fast tag changes (500-1350x faster)
 - **Error Handling**: Robust retry logic and failure tracking
 - **Dry Run Mode**: Test configuration before making changes
 
-## 🚀 Quick Start
+## Quick Start
 
-> **🔒 Safety First:** Language-Fixer defaults to **DRY_RUN=true** for safety! 
+> **Safety First:** Language-Fixer defaults to **DRY_RUN=true** for safety! 
 > - First run shows you **exactly** what would be changed
 > - Review the logs to verify planned changes
 > - Set `DRY_RUN=false` only after confirming changes are correct
 > - Smart defaults automatically become conservative when DRY_RUN=false
 
-> **⚙️ Switching to Production Mode:**
+> **Switching to Production Mode:**
 > 1. Run with `DRY_RUN=true` first (default)
 > 2. Review the container logs: `docker logs language-fixer`
 > 3. Verify the planned changes are correct
 > 4. Set `DRY_RUN=false` in your docker-compose.yml or environment
 > 5. Restart the container: `docker compose up -d`
 
-> **🔄 Automatic Updates:** Using `:latest` tag ensures automatic updates!
+> **Automatic Updates:** Using `:latest` tag ensures automatic updates!
 > - Language-Fixer checks for new versions at startup
 > - Update with: `docker compose pull && docker compose up -d`
 > - Always review [release notes](https://github.com/Randomname653/language-fixer/releases) before updating
@@ -142,7 +142,7 @@ docker run -d \
   luckyone94/language-fixer:latest
 ```
 
-## 🤖 Complete Stack with AI Language Detection
+## Complete Stack with AI Language Detection
 
 For automatic language detection of unknown audio tracks, you can run a local Whisper ASR service alongside Language-Fixer:
 
@@ -205,7 +205,7 @@ networks:
     name: media-stack
 ```
 
-**📚 Whisper Service Details:**
+**Whisper Service Details:**
 - **Repository:** [onerahmet/openai-whisper-asr-webservice](https://github.com/ahmetoner/whisper-asr-webservice)
 - **GPU Support:** NVIDIA GPU recommended for better performance
 - **CPU Fallback:** Remove `deploy` section and set `ASR_DEVICE=cpu` for CPU-only systems
@@ -216,7 +216,7 @@ networks:
   - `large` - Best accuracy (~10GB VRAM)
 - **Performance:** Processes 30-60 seconds of audio in 2-10 seconds (GPU) vs 30-120 seconds (CPU)
 
-### 💻 CPU-Only Alternative
+### CPU-Only Alternative
 
 If you don't have an NVIDIA GPU, use the CPU version:
 
@@ -234,7 +234,7 @@ If you don't have an NVIDIA GPU, use the CPU version:
     # Remove the entire 'deploy' section for CPU-only
 ```
 
-### 🎯 When to Use Whisper Integration
+### When to Use Whisper Integration
 
 The AI language detection is particularly useful for:
 - **Raw/Untitled Media:** Files with `und` (undefined) language tags
@@ -245,11 +245,11 @@ The AI language detection is particularly useful for:
 **Without Whisper:** Files tagged as `und` are kept as-is (if `und` is in `KEEP_AUDIO_LANGS`)
 **With Whisper:** Files tagged as `und` are analyzed and retagged with detected language
 
-## ⚙️ Configuration
+## Configuration
 
-> **📋 Startup Display:** Language-Fixer shows a **detailed configuration summary** for 30 seconds at startup, displaying all active settings, defaults used, and safety warnings. This gives you time to review and cancel if needed.
+> **Startup Display:** Language-Fixer shows a **detailed configuration summary** for 30 seconds at startup, displaying all active settings, defaults used, and safety warnings. This gives you time to review and cancel if needed.
 
-### 🔧 Core Settings
+### Core Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -261,7 +261,7 @@ The AI language detection is particularly useful for:
 | `RUN_INTERVAL_SECONDS` | 43200 | Scan interval in seconds (12h default) |
 | `DRY_RUN` | **true** | **Safe mode - no file changes (NEW DEFAULT!)** |
 
-### 🎵 Audio Settings
+### Audio Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -273,7 +273,7 @@ The AI language detection is particularly useful for:
 
 **Smart Default:* `true` when DRY_RUN=true, `false` when DRY_RUN=false (safety!)
 
-### 📺 Subtitle Settings
+### Subtitle Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -283,7 +283,7 @@ The AI language detection is particularly useful for:
 
 **Smart Default:* `true` when DRY_RUN=true, `false` when DRY_RUN=false (safety!)
 
-### 🔗 Integration Settings
+### Integration Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -294,14 +294,14 @@ The AI language detection is particularly useful for:
 | `RADARR_API_KEY` | - | Radarr API key |
 | `RADARR_PATHS` | /media/movies | Paths monitored by Radarr |
 
-### 🤖 AI Language Detection
+### AI Language Detection
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `WHISPER_API_URL` | - | OpenAI Whisper API endpoint (see [Complete Stack](#-complete-stack-with-ai-language-detection)) |
 | `WHISPER_TIMEOUT` | 300 | Whisper API timeout (seconds) |
 
-### 🔧 Advanced Options
+### Advanced Options
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -312,24 +312,24 @@ The AI language detection is particularly useful for:
 | `FFMPEG_SAMPLE_TIMEOUT` | 60 | Audio sampling timeout (seconds) |
 | `LOG_STATS_ON_COMPLETION` | true | Log detailed statistics after scan |
 
-## 📖 How It Works
+## How It Works
 
-### 1. 🔍 File Discovery
+### 1. File Discovery
 - Scans configured paths for `.mkv` and `.mp4` files
 - Skips already processed files (tracked in SQLite database)
 - Respects failure limits to avoid infinite retry loops
 
-### 2. 🧠 Stream Analysis
+### 2. Stream Analysis
 - Uses `ffprobe` to analyze video/audio/subtitle streams
 - Identifies current language tags and track properties
 - Detects commentary tracks and special content
 
-### 3. 🎯 Language Detection
+### 3. Language Detection
 - For untagged audio (`und`): Uses Whisper API if configured
 - Samples 3 segments from the file for accurate detection
 - Applies majority voting for final language determination
 
-### 4. ⚡ Smart Processing Decision
+### 4. Smart Processing Decision
 - **Metadata-Only Changes**: Uses `mkvpropedit` (seconds)
   - Language tag corrections
   - Audio title standardization  
@@ -339,21 +339,21 @@ The AI language detection is particularly useful for:
   - MP4 → MKV conversion
   - Structural changes
 
-### 5. 💾 Progress Tracking
+### 5. Progress Tracking
 - Batch commits every 10 files prevent data loss
 - Failed files are tracked with retry limits
 - Statistics collection for reporting
 
-### 6. 🔄 Integration Updates
+### 6. Integration Updates
 - Notifies Sonarr/Radarr of processed files
 - Triggers library rescans for updated content
 - Maintains sync with media server databases
 
-## 📊 Performance
+## Performance
 
 Language-Fixer delivers exceptional performance through intelligent processing decisions:
 
-### ⚡ Smart Processing Engine
+### Smart Processing Engine
 
 | Operation Type | Processing Time | Resource Usage | Use Case |
 |----------------|----------------|-----------------|----------|
@@ -361,21 +361,21 @@ Language-Fixer delivers exceptional performance through intelligent processing d
 | **Stream Removal** | 5-15 minutes | Moderate CPU | Remove unwanted audio/subtitle tracks |
 | **Container Conversion** | 10-30 minutes | High CPU | MP4 → MKV, structural changes |
 
-### 🎯 Processing Logic
+### Processing Logic
 
 - **mkvpropedit**: Used for metadata-only changes (99% of operations)
 - **ffmpeg remux**: Only when structural changes are required
 - **Automatic Detection**: Smart decision based on required modifications
 - **Zero Waste**: No temporary files for metadata operations
 
-### 📈 Typical Performance
+### Typical Performance
 
 - **Large Library (1000+ files)**: 2-4 hours for complete processing
 - **10GB Movie File**: 2-5 seconds for language/title updates
 - **Memory Usage**: <100MB consistent footprint
 - **Disk I/O**: Minimal impact on system performance
 
-## 🔍 Monitoring & Troubleshooting
+## Monitoring & Troubleshooting
 
 ### Key Log Messages
 
@@ -419,7 +419,7 @@ docker exec language-fixer python3 debug_database.py
 - Ensure media paths are correctly mounted
 - Check environment variable syntax
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please feel free to:
 - Submit bug reports and feature requests via [GitHub Issues](https://github.com/Randomname653/language-fixer/issues)
@@ -436,13 +436,13 @@ cd language-fixer
 # Test with DRY_RUN=true first
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License - see the [LICENSE](LICENSE) file for details.
 
 **Non-Commercial Use Only:** This software may not be used for commercial purposes or sold. All other rights (use, modification, distribution) are granted under the CC BY-NC-SA 4.0 license.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **FFmpeg** for media processing capabilities
 - **OpenAI Whisper** for AI-powered language detection
