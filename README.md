@@ -1,4 +1,5 @@
 Language-Fixer
+
 Language-Fixer is a powerful, Docker-based automation tool for meticulous media library managers. It integrates seamlessly with Sonarr and Radarr to automatically detect, tag, and organize your movie and TV show collections.
 This project was born from frustration. After finding countless tools that almost met the needs of a dedicated media collector, this project was created to do one thing: manage language metadata exactly the way you want, with no compromises.
 Features
