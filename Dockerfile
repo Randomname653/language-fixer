@@ -14,8 +14,7 @@ RUN apt-get update && \
         sudo \
         tzdata && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    echo "ALL ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment and install Python packages
 RUN python3 -m venv /opt/venv && \

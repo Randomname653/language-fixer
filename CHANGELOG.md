@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.0.7] - 2025-11-02
+
+### Fixed
+- **Critical**: Container failed to start due to broken sudoers configuration
+- Removed sudoers modification that was breaking sudo
+- Root doesn't need sudoers config to switch to other users
+- Container now starts reliably
+
 ## [1.0.6] - 2025-11-02
 
 ### Fixed
