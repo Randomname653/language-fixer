@@ -1,37 +1,26 @@
 Language-Fixer
-A powerful Docker-based automation tool for managing audio and subtitle language metadata in media libraries. It integrates with Sonarr and Radarr to automatically detect, tag, and organize your movie and TV show collections.
+Language-Fixer is a powerful, Docker-based automation tool for meticulous media library managers. It integrates seamlessly with Sonarr and Radarr to automatically detect, tag, and organize your movie and TV show collections.
+This project was born from frustration. After finding countless tools that almost met the needs of a dedicated media collector, this project was created to do one thing: manage language metadata exactly the way you want, with no compromises.
 Features
-Language-Fixer provides a comprehensive set of features for media library management:
- * Integration: Seamlessly connects with Sonarr and Radarr for library scanning and updates.
- * AI Language Detection: Optionally uses a self-hosted Whisper API to identify and tag unknown (und) audio tracks.
- * Audio Management:
-   * Sets correct language metadata (e.g., eng, jpn, deu).
-   * Standardizes track titles (e.g., "Dolby Digital 2.0 (English)").
-   * Intelligently sets default audio tracks based on user preferences.
-   * Preserves director's commentary and special audio tracks.
- * Subtitle Management:
-   * Filters and keeps only desired subtitle languages.
-   * Assigns a preferred subtitle language as the default.
-   * Removes unwanted subtitle tracks to save space.
- * Container and Stream Management:
-   * Automatically converts .mp4 files to .mkv for better metadata support.
-   * Removes unwanted audio, subtitle, or attachment streams (e.g., fonts).
- * Performance and Reliability:
-   * Smart Processing: Uses mkvpropedit for metadata-only edits (500-1350x faster) and only performs a full ffmpeg remux when structurally necessary.
-   * Stateful Processing: An SQLite database prevents reprocessing of files and tracks failures.
-   * Safety: DRY_RUN=true is the default to allow reviewing planned changes before execution. Batch commits prevent data loss during interruptions.
-Quick Start
-> Safety First: Language-Fixer defaults to DRY_RUN=true.
->  * Run the container with DRY_RUN=true (default).
->  * Review the container logs (docker logs language-fixer) to verify planned changes.
->  * Set DRY_RUN=false in your configuration only after confirming the changes are correct.
->  * The tool's smart defaults automatically become conservative (e.g., REMOVE_AUDIO=false) when DRY_RUN is disabled.
-> 
-> Automatic Updates:
-> Using the :latest tag ensures Language-Fixer checks for new versions at startup.
-> Update your stack with: docker compose pull && docker compose up -d
-> 
+ * Smart Automation: Integrates with Sonarr and Radarr to scan your library and automatically update media servers after processing.
+ * Intelligent Processing: This is the core feature. Language-Fixer analyzes the required changes and decides the most efficient processing method:
+   * Metadata-Only Edits: Uses mkvpropedit for lightning-fast changes (2-5 seconds) like correcting language tags, standardizing track titles, or setting default flags.
+   * Full Remux: Only uses ffmpeg when structurally necessary (e.g., removing streams, converting MP4 to MKV).
+ * AI Language Detection: Optionally integrates with a self-hosted Whisper API to analyze and correctly tag unknown (und) audio tracks.
+ * Full Metadata Control:
+   * Audio: Sets correct language tags (e.g., eng, jpn), renames tracks to a standard format (e.g., "Dolby Digital 2.0 (English)"), and sets your preferred default language.
+   * Subtitles: Removes unwanted languages and sets your preferred default subtitle track.
+   * Cleanup: Can remove unwanted streams (audio, subtitle) and attachments (fonts).
+   * Preservation: Intelligently identifies and preserves commentary tracks.
+ * Stateful & Reliable: Uses an SQLite database to track processed files, preventing re-work and safely managing failures.
+Safety First: The Core Philosophy
+This tool is built to be safe and conservative, especially when handling large libraries.
+ * Dry Run by Default: Language-Fixer always defaults to DRY_RUN=true. It will log exactly what it plans to do (e.g., [DRY_RUN] Would remove subtitle stream 3 (spa)) without touching a single file. You must review the logs and manually set DRY_RUN=false to enable changes.
+ * Smart Defaults: When you set DRY_RUN=false, the tool remains conservative. Any destructive setting (like REMOVE_AUDIO or REMOVE_SUBTITLES) that you have not explicitly set will default to false. This prevents accidental deletion of streams.
+ * Startup Pause: At startup, the tool displays its full configuration and pauses for 30 seconds, giving you time to review settings and cancel if you spot a mistake.
+Quick Start & Installation
 Docker Compose (Recommended)
+This is the recommended setup for most users.
 version: '3.8'
 
 services:
@@ -65,10 +54,6 @@ services:
       - KEEP_SUBTITLE_LANGS=jpn,deu,eng
       - DEFAULT_SUBTITLE_LANG=deu
       
-      # Optional: Whisper API for unknown language detection
-      - WHISPER_API_URL=http://your-whisper-server:9000/asr
-      - WHISPER_TIMEOUT=300
-      
       # Optional: Sonarr Integration
       - SONARR_URL=http://your-sonarr:8989
       - SONARR_API_KEY=your-api-key
@@ -79,11 +64,9 @@ services:
       - RADARR_API_KEY=your-api-key
       - RADARR_PATHS=/media/movies
       
-      # Advanced Options
-      - REMOVE_ATTACHMENTS=false
-      - REMOVE_FONTS=false
-      - KEEP_COMMENTARY=true
-      - MAX_FAILURES=3
+      # Optional: Whisper API
+      - WHISPER_API_URL=http://your-whisper-server:9000/asr
+      - WHISPER_TIMEOUT=300
       
     volumes:
       - /path/to/config:/config
@@ -166,25 +149,15 @@ networks:
 
 Whisper Service Details:
  * GPU Support: NVIDIA GPU recommended.
- * CPU Fallback: Remove the deploy section and set ASR_DEVICE=cpu.
- * Model Options: tiny (~1GB VRAM), small (~2GB VRAM) [Recommended], medium (~5GB VRAM), large (~10GB VRAM).
-CPU-Only Alternative
-For CPU-only systems, use the following configuration for the Whisper service:
-  openai-whisper-asr-webservice:
-    image: onerahmet/openai-whisper-asr-webservice:latest  # Note: no '-gpu' suffix
-    container_name: whisper-asr
-    restart: unless-stopped
-    ports:
-      - '9000:9000'
-    environment:
-      - ASR_ENGINE=faster_whisper
-      - ASR_MODEL=tiny            # 'tiny' is recommended for CPU
-      - ASR_DEVICE=cpu
-    # Remove the entire 'deploy' section
-
+ * CPU Fallback: For CPU-only systems, use the onerahmet/openai-whisper-asr-webservice:latest image (no -gpu suffix), set ASR_DEVICE=cpu, use ASR_MODEL=tiny, and remove the entire deploy section.
+How It Works
+ * File Discovery: Scans configured paths for .mkv and .mp4 files, skipping any already present in the SQLite database.
+ * Stream Analysis: Uses ffprobe to analyze all video, audio, and subtitle streams, identifying current language tags, titles, and commentary tracks.
+ * Language Detection: If configured, untagged (und) audio tracks are sampled and sent to the Whisper API for identification.
+ * Smart Processing Decision: The tool builds a list of required changes and determines if a fast mkvpropedit is sufficient or if a full ffmpeg remux is required.
+ * Execution & Tracking: Changes are executed. The file's status (success, failure) is committed to the database in batches to prevent data loss.
+ * Notification: If integrated, notifies Sonarr/Radarr of the processed files to trigger a library rescan.
 Configuration
-> Startup Display: Language-Fixer shows a detailed configuration summary for 30 seconds at startup, displaying all active settings, defaults used, and safety warnings.
-> 
 Core Settings
 | Variable | Default | Description |
 |---|---|---|
@@ -194,7 +167,7 @@ Core Settings
 | DB_PATH | /config/langfixer.db | SQLite database location |
 | LOG_LEVEL | info | Logging level (debug, info, warning, error) |
 | RUN_INTERVAL_SECONDS | 43200 | Scan interval in seconds (12h default) |
-| DRY_RUN | true | Safe mode - no file changes |
+| DRY_RUN | true | Safe mode - no file changes. See "Safety First" section. |
 Audio Settings
 | Variable | Default | Description |
 |---|---|---|
@@ -203,14 +176,13 @@ Audio Settings
 | KEEP_AUDIO_LANGS | jpn,deu,eng,und | Audio languages to preserve |
 | DEFAULT_AUDIO_LANG | jpn | Preferred default audio language |
 | KEEP_COMMENTARY | true | Keep director's commentary |
-*Smart Default: true when DRY_RUN=true, false when DRY_RUN=false (safety!)
 Subtitle Settings
 | Variable | Default | Description |
 |---|---|---|
 | REMOVE_SUBTITLES | Smart* | Remove unwanted subtitle tracks |
 | KEEP_SUBTITLE_LANGS | jpn,deu,eng | Subtitle languages to preserve |
 | DEFAULT_SUBTITLE_LANG | deu | Preferred default subtitle language |
-*Smart Default: true when DRY_RUN=true, false when DRY_RUN=false (safety!)
+* Smart Default: This setting defaults to false when DRY_RUN=false unless explicitly set to true.
 Integration Settings
 | Variable | Default | Description |
 |---|---|---|
@@ -234,64 +206,43 @@ Advanced Options
 | MKVPROPEDIT_TIMEOUT | 300 | mkvpropedit timeout (seconds) |
 | FFMPEG_SAMPLE_TIMEOUT | 60 | Audio sampling timeout (seconds) |
 | LOG_STATS_ON_COMPLETION | true | Log detailed statistics after scan |
-How It Works
- * File Discovery: Scans configured paths for .mkv and .mp4 files, skipping already processed files based on the SQLite database.
- * Stream Analysis: Uses ffprobe to analyze all streams, identifying language tags, titles, and commentary tracks.
- * Language Detection: If configured, untagged (und) audio tracks are sampled and analyzed by the Whisper API to determine the correct language.
- * Smart Processing Decision: The tool decides whether to use fast mkvpropedit (for metadata-only changes) or a full ffmpeg remux (for stream removal or container conversion).
- * Progress Tracking: Changes are committed to the database in batches to prevent data loss.
- * Integration Updates: Notifies Sonarr/Radarr of processed files to trigger library rescans.
 Performance
-Smart Processing Engine
+The "Smart Processing" engine is key to performance.
 | Operation Type | Processing Time | Resource Usage | Use Case |
 |---|---|---|---|
 | Metadata Changes | 2-5 seconds | <1% CPU, <1MB I/O | Language tags, audio titles, default flags |
 | Stream Removal | 5-15 minutes | Moderate CPU | Remove unwanted audio/subtitle tracks |
 | Container Conversion | 10-30 minutes | High CPU | MP4 → MKV, structural changes |
-Processing Logic
- * mkvpropedit: Used for metadata-only changes (most operations).
- * ffmpeg remux: Used only when structural changes are required.
- * Zero Waste: No temporary files are created for metadata operations.
-Typical Performance
- * 10GB Movie File: 2-5 seconds for language/title updates.
+ * Zero Waste: No temporary files are created for metadata-only operations.
+ * Typical 10GB File: 2-5 seconds for language/title updates.
  * Memory Usage: <100MB footprint.
 Monitoring & Troubleshooting
 Key Log Messages
+Here are common log messages and their meanings (all logs are in English):
 # Safety timer at startup
-Zeige Konfiguration für 30 Sekunden...
+[INFO] Displaying configuration for 30 seconds...
 
 # Successful file processing
-Erfolgreich verarbeitet: movie.mkv
-Überspringe (bereits verarbeitet): movie.mkv
+[INFO] Successfully processed: movie.mkv
+[INFO] Skipping (already processed): movie.mkv
 
 # Processing method indicators
-Führe mkvpropedit durch...    # Fast metadata edit
-Führe Remux (ffmpeg) durch... # Full remux required
+[DEBUG] Performing fast metadata edit (mkvpropedit)...
+[INFO] Performing full remux (ffmpeg) as stream removal is required...
 
 # Batch commits for data safety
-Batch-Commit nach 10 Dateien...
+[DEBUG] Batch committing 10 files to database...
 
 Database Troubleshooting
-Check database status and processed files:
+To check database status and processed files:
 docker exec language-fixer python3 debug_database.py
 
 Common Issues
- * Files being reprocessed every run: Ensure /config volume is persistent and writable. Verify DRY_RUN=false.
- * Slow processing times: Check logs to see if ffmpeg is being used instead of mkvpropedit. Check Whisper API responsiveness.
- * Container startup issues: Verify PUID/PGID permissions and that media paths are correctly mounted.
+ * Files being reprocessed every run: Ensure your /config volume is persistent and writable by the PUID/PGID. Verify DRY_RUN is false if you expect changes.
+ * Slow processing times: Check logs to see if ffmpeg is being used. This is normal if you are removing streams, but if not, your file may require a remux.
+ * Container startup issues: Verify PUID/PGID permissions and that your media paths are correctly mounted.
 Contributing
-Contributions are welcome. Please submit bug reports, feature requests, or pull requests via GitHub.
-Development Setup
-git clone https://github.com/Randomname653/language-fixer.git
-cd language-fixer
-# Edit language_fixer.py
-# Test with DRY_RUN=true first
-
+Contributions are welcome. Please feel free to submit bug reports, feature requests, or pull requests via GitHub Issues.
 License
-This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
-Non-Commercial Use Only: This software may not be used for commercial purposes.
-Acknowledgments
- * FFmpeg
- * OpenAI Whisper
- * Sonarr & Radarr
- * MKVToolNix
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0).
+This software may not be used for commercial purposes.
